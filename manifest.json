@@ -2,9 +2,18 @@
   "name": "NVN Forklift Database",
   "short_name": "NVN APP",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#b91c1c",
   "orientation": "portrait",
-  "description": "NVN Forklift Database"
+  "description": "NVN Forklift Database",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
