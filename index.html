@@ -454,5 +454,17 @@ async function loadHistory() {
 }
 
 </script>
+  <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#b91c1c">
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("NVN PWA ready"))
+      .catch(err => console.error(err));
+  });
+}
+</script>
 </body>
 </html>
