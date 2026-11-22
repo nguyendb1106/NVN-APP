@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NVN Vehicle Management</title>
+<meta name="theme-color" content="#1f2937">
+<title>NVN Forklift Database</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   font-family: Arial, sans-serif;
-  background: #f1f3f6;
+  background: #f2f4f7;
   margin: 0;
   padding: 15px;
   color: #222;
@@ -22,481 +20,439 @@ body {
 .container {
   max-width: 600px;
   margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
 h2 {
   text-align: center;
-  margin-top: 5px;
+  margin-bottom: 20px;
   color: #1f2937;
 }
 
-label {
-  display: block;
-  margin-top: 14px;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-input, textarea {
+input, textarea, button {
   width: 100%;
   padding: 12px;
-  margin-top: 6px;
-  border: 1px solid #ccc;
-  border-radius: 7px;
+  margin: 7px 0;
   font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
-textarea {
-  resize: vertical;
-  min-height: 90px;
-}
+textarea { resize: vertical; }
 
 button {
-  padding: 12px;
   border: none;
-  border-radius: 7px;
-  font-size: 15px;
+  color: white;
   font-weight: bold;
   cursor: pointer;
 }
 
-.main-buttons {
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-}
+.save { background: #198754; }
+.search { background: #0d6efd; }
+.clear { background: #6c757d; }
+.add-event { background: #1f2937; }
+.event-save { background: #198754; }
 
-.main-buttons button {
-  flex: 1;
-}
-
-.save-btn {
-  background: #198754;
-  color: white;
-}
-
-.search-btn {
-  background: #0d6efd;
-  color: white;
-}
-
-.clear-btn {
-  background: #6c757d;
-  color: white;
-}
-
-.history-section {
-  margin-top: 25px;
-  border-top: 2px solid #e5e7eb;
-  padding-top: 18px;
-}
-
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-}
-
-.history-header h3 {
-  margin: 0;
-}
-
-.add-btn {
-  background: #198754;
-  color: white;
-  padding: 10px 14px;
-}
-
-.event-form {
-  background: #f8f9fa;
-  padding: 15px;
+.card {
+  background: white;
   border-radius: 10px;
+  padding: 15px;
   margin-top: 15px;
-  border: 1px solid #ddd;
+  box-shadow: 0 2px 6px #00000012;
 }
 
-.event-form button {
-  width: 100%;
-  margin-top: 12px;
-}
-
-.event-save-btn {
-  background: #0d6efd;
-  color: white;
-}
-
-.event-cancel-btn {
-  background: #6c757d;
-  color: white;
-  margin-top: 8px !important;
-}
-
-.event-item {
-  border-left: 4px solid #0d6efd;
-  padding: 12px;
-  margin-top: 15px;
+.event {
+  border-left: 3px solid #0d6efd;
+  padding: 10px;
+  margin: 12px 0;
   background: #f8f9fa;
-  border-radius: 6px;
 }
 
 .event-date {
-  color: #0d6efd;
-  font-weight: bold;
+  color: #555;
   font-size: 14px;
+  margin-bottom: 5px;
 }
 
-.event-title {
-  font-weight: bold;
-  margin-top: 6px;
-  font-size: 16px;
-}
+.hidden { display: none; }
 
-.event-description {
-  margin-top: 8px;
-  white-space: pre-wrap;
+#status {
+  text-align: center;
+  margin: 10px 0;
+  font-size: 14px;
   word-break: break-word;
-  color: #444;
-}
-
-.empty-history {
-  text-align: center;
-  color: #888;
-  padding: 20px 5px;
-}
-
-.message {
-  margin-top: 15px;
-  text-align: center;
-  font-weight: bold;
-}
-
-.hidden {
-  display: none;
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<h2>NVN VEHICLE MANAGEMENT</h2>
+<h2>NVN FORKLIFT DATABASE</h2>
 
-<label>Customer Name</label>
-<input id="customer" type="text">
+<input id="customer" placeholder="Customer Name">
+<input id="location" placeholder="Location">
+<input id="vehicle_name" placeholder="Vehicle Name">
+<input id="model" placeholder="Model">
+<input id="serial" placeholder="Serial Number">
 
-<label>Location</label>
-<input id="location" type="text">
+<button class="save" onclick="saveVehicle()">SAVE</button>
+<button class="search" onclick="searchVehicle()">SEARCH</button>
+<button class="clear" onclick="clearForm()">CLEAR</button>
 
-<label>Vehicle Name</label>
-<input id="vehicleName" type="text">
+<div id="status"></div>
 
-<label>Model</label>
-<input id="model" type="text">
+<div id="historySection" class="card hidden">
 
-<label>Serial Number</label>
-<input id="serial" type="text">
+<h3>History</h3>
 
-<div class="main-buttons">
-  <button class="save-btn" onclick="saveVehicle()">SAVE</button>
-  <button class="search-btn" onclick="searchVehicle()">SEARCH</button>
-  <button class="clear-btn" onclick="clearForm()">CLEAR</button>
-</div>
+<button class="add-event" onclick="showEventForm()">
++ ADD EVENT
+</button>
 
-<div id="message" class="message"></div>
+<div id="eventForm" class="hidden">
 
-<div id="historySection" class="history-section hidden">
+<input type="date" id="eventDate">
+<input id="eventTitle" placeholder="Title">
 
-  <div class="history-header">
-    <h3>VEHICLE HISTORY</h3>
-    <button class="add-btn" onclick="showEventForm()">+ ADD EVENT</button>
-  </div>
+<textarea id="eventDescription"
+placeholder="Description"
+rows="4"></textarea>
 
-  <div id="eventForm" class="event-form hidden">
+<button class="event-save" onclick="saveEvent()">
+SAVE EVENT
+</button>
 
-    <label>Event Date</label>
-    <input id="eventDate" type="date">
-
-    <label>Title</label>
-    <input id="eventTitle" type="text" placeholder="Event title">
-
-    <label>Description</label>
-    <textarea id="eventDescription" placeholder="Event details"></textarea>
-
-    <button class="event-save-btn" onclick="saveEvent()">SAVE EVENT</button>
-    <button class="event-cancel-btn" onclick="hideEventForm()">CANCEL</button>
-
-  </div>
-
-  <div id="historyList"></div>
+<button class="clear" onclick="hideEventForm()">
+CANCEL
+</button>
 
 </div>
 
+<div id="historyList"></div>
+
+</div>
 </div>
 
 <script>
 
-const STORAGE_KEY = "NVN";
+// SUPABASE CONNECTION
 
-function getData() {
-  try {
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-    return Array.isArray(data) ? data : [];
-  } catch(e) {
-    return [];
+const SUPABASE_URL = "https://zqptyvkvvzsyvvouvcgf.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
+
+const API = SUPABASE_URL + "/rest/v1";
+
+let currentVehicleId = null;
+
+
+// API REQUEST
+
+async function apiRequest(url, options = {}) {
+
+  const response = await fetch(API + url, {
+    ...options,
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation",
+      ...(options.headers || {})
+    }
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(text || response.statusText);
   }
+
+  return text ? JSON.parse(text) : null;
 }
 
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+// STATUS
+
+function showStatus(message) {
+  document.getElementById("status").textContent = message;
 }
 
-function getSerial() {
-  return document.getElementById("serial").value.trim();
-}
 
-function getVehicleIndex(data, serial) {
-  return data.findIndex(v => 
-    String(v.serial || "").trim().toLowerCase() === serial.toLowerCase()
-  );
-}
+// SAVE VEHICLE
 
-function showMessage(text, color) {
-  const msg = document.getElementById("message");
-  msg.textContent = text;
-  msg.style.color = color || "#333";
-}
+async function saveVehicle() {
 
-function saveVehicle() {
   const customer = document.getElementById("customer").value.trim();
   const location = document.getElementById("location").value.trim();
-  const vehicleName = document.getElementById("vehicleName").value.trim();
+  const vehicle_name = document.getElementById("vehicle_name").value.trim();
   const model = document.getElementById("model").value.trim();
-  const serial = getSerial();
+  const serial = document.getElementById("serial").value.trim();
 
   if (!serial) {
-    showMessage("Please enter Serial Number.", "red");
+    showStatus("Serial Number is required");
     return;
   }
 
-  let data = getData();
-  let index = getVehicleIndex(data, serial);
+  try {
 
-  if (index !== -1) {
-    // Update existing vehicle but preserve its history
-    data[index].customer = customer;
-    data[index].location = location;
-    data[index].vehicleName = vehicleName;
-    data[index].model = model;
+    showStatus("Saving...");
 
-    if (!Array.isArray(data[index].history)) {
-      data[index].history = [];
+    const existing = await apiRequest(
+      "/vehicles?serial=eq." + encodeURIComponent(serial) + "&select=*"
+    );
+
+    const data = {
+      customer,
+      location,
+      vehicle_name,
+      model,
+      serial
+    };
+
+    if (existing && existing.length > 0) {
+
+      await apiRequest(
+        "/vehicles?id=eq." + existing[0].id,
+        {
+          method: "PATCH",
+          body: JSON.stringify(data)
+        }
+      );
+
+      currentVehicleId = existing[0].id;
+
+      showStatus("Vehicle updated successfully");
+
+    } else {
+
+      const vehicle = await apiRequest(
+        "/vehicles",
+        {
+          method: "POST",
+          body: JSON.stringify(data)
+        }
+      );
+
+      currentVehicleId = vehicle[0].id;
+
+      showStatus("Vehicle saved successfully");
     }
 
-    showMessage("Vehicle information updated.", "green");
-  } else {
-    data.push({
-      customer: customer,
-      location: location,
-      vehicleName: vehicleName,
-      model: model,
-      serial: serial,
-      history: []
-    });
+    document.getElementById("historySection")
+      .classList.remove("hidden");
 
-    showMessage("Vehicle saved successfully.", "green");
+    await loadHistory();
+
+  } catch (error) {
+
+    showStatus("ERROR: " + error.message);
+
   }
-
-  saveData(data);
-  displayHistory(serial);
 }
 
-function searchVehicle() {
-  const serial = getSerial();
+
+// SEARCH VEHICLE
+
+async function searchVehicle() {
+
+  const serial = document.getElementById("serial").value.trim();
 
   if (!serial) {
-    showMessage("Please enter Serial Number.", "red");
+    showStatus("Enter Serial Number");
     return;
   }
 
-  let data = getData();
-  let index = getVehicleIndex(data, serial);
+  try {
 
-  if (index === -1) {
-    document.getElementById("historySection").classList.add("hidden");
-    showMessage("Vehicle not found.", "red");
-    return;
+    showStatus("Searching...");
+
+    const result = await apiRequest(
+      "/vehicles?serial=eq." + encodeURIComponent(serial) + "&select=*"
+    );
+
+    if (!result || result.length === 0) {
+
+      currentVehicleId = null;
+
+      document.getElementById("historySection")
+        .classList.add("hidden");
+
+      showStatus("Vehicle not found");
+
+      return;
+    }
+
+    const vehicle = result[0];
+
+    currentVehicleId = vehicle.id;
+
+    document.getElementById("customer").value = vehicle.customer || "";
+    document.getElementById("location").value = vehicle.location || "";
+    document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
+    document.getElementById("model").value = vehicle.model || "";
+    document.getElementById("serial").value = vehicle.serial || "";
+
+    document.getElementById("historySection")
+      .classList.remove("hidden");
+
+    await loadHistory();
+
+    showStatus("Vehicle found");
+
+  } catch (error) {
+
+    showStatus("ERROR: " + error.message);
+
   }
-
-  let vehicle = data[index];
-
-  document.getElementById("customer").value = vehicle.customer || "";
-  document.getElementById("location").value = vehicle.location || "";
-  document.getElementById("vehicleName").value = vehicle.vehicleName || "";
-  document.getElementById("model").value = vehicle.model || "";
-
-  showMessage("Vehicle found.", "green");
-  displayHistory(serial);
 }
 
-function displayHistory(serial) {
-  let data = getData();
-  let index = getVehicleIndex(data, serial);
 
-  if (index === -1) {
-    document.getElementById("historySection").classList.add("hidden");
-    return;
-  }
-
-  let vehicle = data[index];
-
-  if (!Array.isArray(vehicle.history)) {
-    vehicle.history = [];
-  }
-
-  // Sort newest event first
-  vehicle.history.sort((a, b) => {
-    return String(b.date || "").localeCompare(String(a.date || ""));
-  });
-
-  saveData(data);
-
-  document.getElementById("historySection").classList.remove("hidden");
-
-  const list = document.getElementById("historyList");
-
-  if (vehicle.history.length === 0) {
-    list.innerHTML = '<div class="empty-history">No history events yet.</div>';
-    return;
-  }
-
-  list.innerHTML = "";
-
-  vehicle.history.forEach(event => {
-    let item = document.createElement("div");
-    item.className = "event-item";
-
-    let date = document.createElement("div");
-    date.className = "event-date";
-    date.textContent = formatDate(event.date);
-
-    let title = document.createElement("div");
-    title.className = "event-title";
-    title.textContent = event.title || "";
-
-    let description = document.createElement("div");
-    description.className = "event-description";
-    description.textContent = event.description || "";
-
-    item.appendChild(date);
-    item.appendChild(title);
-    item.appendChild(description);
-
-    list.appendChild(item);
-  });
-}
-
-function formatDate(dateString) {
-  if (!dateString) return "";
-
-  const parts = dateString.split("-");
-  if (parts.length === 3) {
-    return parts[2] + "/" + parts[1] + "/" + parts[0];
-  }
-
-  return dateString;
-}
-
-function showEventForm() {
-  const serial = getSerial();
-
-  if (!serial) {
-    showMessage("Please enter Serial Number first.", "red");
-    return;
-  }
-
-  let data = getData();
-  let index = getVehicleIndex(data, serial);
-
-  if (index === -1) {
-    showMessage("Please SAVE the vehicle first.", "red");
-    return;
-  }
-
-  document.getElementById("eventForm").classList.remove("hidden");
-
-  document.getElementById("eventDate").value =
-    new Date().toISOString().slice(0, 10);
-
-  document.getElementById("eventTitle").value = "";
-  document.getElementById("eventDescription").value = "";
-}
-
-function hideEventForm() {
-  document.getElementById("eventForm").classList.add("hidden");
-}
-
-function saveEvent() {
-  const serial = getSerial();
-  const date = document.getElementById("eventDate").value;
-  const title = document.getElementById("eventTitle").value.trim();
-  const description = document.getElementById("eventDescription").value.trim();
-
-  if (!date) {
-    showMessage("Please select Event Date.", "red");
-    return;
-  }
-
-  if (!title) {
-    showMessage("Please enter Event Title.", "red");
-    return;
-  }
-
-  let data = getData();
-  let index = getVehicleIndex(data, serial);
-
-  if (index === -1) {
-    showMessage("Vehicle not found.", "red");
-    return;
-  }
-
-  if (!Array.isArray(data[index].history)) {
-    data[index].history = [];
-  }
-
-  data[index].history.push({
-    date: date,
-    title: title,
-    description: description
-  });
-
-  saveData(data);
-
-  hideEventForm();
-  displayHistory(serial);
-
-  showMessage("Event added successfully.", "green");
-}
+// CLEAR FORM
 
 function clearForm() {
+
   document.getElementById("customer").value = "";
   document.getElementById("location").value = "";
-  document.getElementById("vehicleName").value = "";
+  document.getElementById("vehicle_name").value = "";
   document.getElementById("model").value = "";
   document.getElementById("serial").value = "";
 
-  document.getElementById("historySection").classList.add("hidden");
-  document.getElementById("eventForm").classList.add("hidden");
+  document.getElementById("historySection")
+    .classList.add("hidden");
 
-  showMessage("", "");
+  document.getElementById("historyList").innerHTML = "";
+
+  currentVehicleId = null;
+
+  showStatus("");
+}
+
+
+// ADD EVENT
+
+function showEventForm() {
+
+  if (!currentVehicleId) {
+    showStatus("Please SAVE or SEARCH a vehicle first");
+    return;
+  }
+
+  document.getElementById("eventForm")
+    .classList.remove("hidden");
+
+  document.getElementById("eventDate").value =
+    new Date().toISOString().slice(0, 10);
+}
+
+
+function hideEventForm() {
+
+  document.getElementById("eventForm")
+    .classList.add("hidden");
+}
+
+
+// SAVE EVENT
+
+async function saveEvent() {
+
+  if (!currentVehicleId) {
+    showStatus("No vehicle selected");
+    return;
+  }
+
+  const event_date = document.getElementById("eventDate").value;
+  const title = document.getElementById("eventTitle").value.trim();
+  const description = document.getElementById("eventDescription").value.trim();
+
+  if (!event_date || !title) {
+    showStatus("Date and Title are required");
+    return;
+  }
+
+  try {
+
+    showStatus("Saving event...");
+
+    await apiRequest(
+      "/vehicle_history",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          vehicle_id: currentVehicleId,
+          event_date,
+          title,
+          description
+        })
+      }
+    );
+
+    document.getElementById("eventDate").value = "";
+    document.getElementById("eventTitle").value = "";
+    document.getElementById("eventDescription").value = "";
+
+    hideEventForm();
+
+    await loadHistory();
+
+    showStatus("Event saved successfully");
+
+  } catch (error) {
+
+    showStatus("ERROR: " + error.message);
+
+  }
+}
+
+
+// LOAD HISTORY
+
+async function loadHistory() {
+
+  if (!currentVehicleId) return;
+
+  const events = await apiRequest(
+    "/vehicle_history?vehicle_id=eq." +
+    currentVehicleId +
+    "&select=*&order=event_date.desc,created_at.desc"
+  );
+
+  const list = document.getElementById("historyList");
+
+  list.innerHTML = "";
+
+  if (!events || events.length === 0) {
+
+    list.innerHTML = "<p>No history available</p>";
+
+    return;
+  }
+
+  events.forEach(event => {
+
+    const div = document.createElement("div");
+    div.className = "event";
+
+    const date = document.createElement("div");
+    date.className = "event-date";
+    date.textContent = event.event_date;
+
+    const title = document.createElement("strong");
+    title.textContent = event.title;
+
+    const description = document.createElement("p");
+    description.textContent = event.description || "";
+
+    div.appendChild(date);
+    div.appendChild(title);
+    div.appendChild(description);
+
+    list.appendChild(div);
+
+  });
+
 }
 
 </script>
-
 </body>
 </html>
