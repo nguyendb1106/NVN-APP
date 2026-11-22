@@ -1,0 +1,502 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NVN Vehicle Management</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f3f6;
+  margin: 0;
+  padding: 15px;
+  color: #222;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+h2 {
+  text-align: center;
+  margin-top: 5px;
+  color: #1f2937;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 16px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+button {
+  padding: 12px;
+  border: none;
+  border-radius: 7px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.main-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.main-buttons button {
+  flex: 1;
+}
+
+.save-btn {
+  background: #198754;
+  color: white;
+}
+
+.search-btn {
+  background: #0d6efd;
+  color: white;
+}
+
+.clear-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.history-section {
+  margin-top: 25px;
+  border-top: 2px solid #e5e7eb;
+  padding-top: 18px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.history-header h3 {
+  margin: 0;
+}
+
+.add-btn {
+  background: #198754;
+  color: white;
+  padding: 10px 14px;
+}
+
+.event-form {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  border: 1px solid #ddd;
+}
+
+.event-form button {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.event-save-btn {
+  background: #0d6efd;
+  color: white;
+}
+
+.event-cancel-btn {
+  background: #6c757d;
+  color: white;
+  margin-top: 8px !important;
+}
+
+.event-item {
+  border-left: 4px solid #0d6efd;
+  padding: 12px;
+  margin-top: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.event-date {
+  color: #0d6efd;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.event-title {
+  font-weight: bold;
+  margin-top: 6px;
+  font-size: 16px;
+}
+
+.event-description {
+  margin-top: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #444;
+}
+
+.empty-history {
+  text-align: center;
+  color: #888;
+  padding: 20px 5px;
+}
+
+.message {
+  margin-top: 15px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>NVN VEHICLE MANAGEMENT</h2>
+
+<label>Customer Name</label>
+<input id="customer" type="text">
+
+<label>Location</label>
+<input id="location" type="text">
+
+<label>Vehicle Name</label>
+<input id="vehicleName" type="text">
+
+<label>Model</label>
+<input id="model" type="text">
+
+<label>Serial Number</label>
+<input id="serial" type="text">
+
+<div class="main-buttons">
+  <button class="save-btn" onclick="saveVehicle()">SAVE</button>
+  <button class="search-btn" onclick="searchVehicle()">SEARCH</button>
+  <button class="clear-btn" onclick="clearForm()">CLEAR</button>
+</div>
+
+<div id="message" class="message"></div>
+
+<div id="historySection" class="history-section hidden">
+
+  <div class="history-header">
+    <h3>VEHICLE HISTORY</h3>
+    <button class="add-btn" onclick="showEventForm()">+ ADD EVENT</button>
+  </div>
+
+  <div id="eventForm" class="event-form hidden">
+
+    <label>Event Date</label>
+    <input id="eventDate" type="date">
+
+    <label>Title</label>
+    <input id="eventTitle" type="text" placeholder="Event title">
+
+    <label>Description</label>
+    <textarea id="eventDescription" placeholder="Event details"></textarea>
+
+    <button class="event-save-btn" onclick="saveEvent()">SAVE EVENT</button>
+    <button class="event-cancel-btn" onclick="hideEventForm()">CANCEL</button>
+
+  </div>
+
+  <div id="historyList"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const STORAGE_KEY = "NVN";
+
+function getData() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getSerial() {
+  return document.getElementById("serial").value.trim();
+}
+
+function getVehicleIndex(data, serial) {
+  return data.findIndex(v => 
+    String(v.serial || "").trim().toLowerCase() === serial.toLowerCase()
+  );
+}
+
+function showMessage(text, color) {
+  const msg = document.getElementById("message");
+  msg.textContent = text;
+  msg.style.color = color || "#333";
+}
+
+function saveVehicle() {
+  const customer = document.getElementById("customer").value.trim();
+  const location = document.getElementById("location").value.trim();
+  const vehicleName = document.getElementById("vehicleName").value.trim();
+  const model = document.getElementById("model").value.trim();
+  const serial = getSerial();
+
+  if (!serial) {
+    showMessage("Please enter Serial Number.", "red");
+    return;
+  }
+
+  let data = getData();
+  let index = getVehicleIndex(data, serial);
+
+  if (index !== -1) {
+    // Update existing vehicle but preserve its history
+    data[index].customer = customer;
+    data[index].location = location;
+    data[index].vehicleName = vehicleName;
+    data[index].model = model;
+
+    if (!Array.isArray(data[index].history)) {
+      data[index].history = [];
+    }
+
+    showMessage("Vehicle information updated.", "green");
+  } else {
+    data.push({
+      customer: customer,
+      location: location,
+      vehicleName: vehicleName,
+      model: model,
+      serial: serial,
+      history: []
+    });
+
+    showMessage("Vehicle saved successfully.", "green");
+  }
+
+  saveData(data);
+  displayHistory(serial);
+}
+
+function searchVehicle() {
+  const serial = getSerial();
+
+  if (!serial) {
+    showMessage("Please enter Serial Number.", "red");
+    return;
+  }
+
+  let data = getData();
+  let index = getVehicleIndex(data, serial);
+
+  if (index === -1) {
+    document.getElementById("historySection").classList.add("hidden");
+    showMessage("Vehicle not found.", "red");
+    return;
+  }
+
+  let vehicle = data[index];
+
+  document.getElementById("customer").value = vehicle.customer || "";
+  document.getElementById("location").value = vehicle.location || "";
+  document.getElementById("vehicleName").value = vehicle.vehicleName || "";
+  document.getElementById("model").value = vehicle.model || "";
+
+  showMessage("Vehicle found.", "green");
+  displayHistory(serial);
+}
+
+function displayHistory(serial) {
+  let data = getData();
+  let index = getVehicleIndex(data, serial);
+
+  if (index === -1) {
+    document.getElementById("historySection").classList.add("hidden");
+    return;
+  }
+
+  let vehicle = data[index];
+
+  if (!Array.isArray(vehicle.history)) {
+    vehicle.history = [];
+  }
+
+  // Sort newest event first
+  vehicle.history.sort((a, b) => {
+    return String(b.date || "").localeCompare(String(a.date || ""));
+  });
+
+  saveData(data);
+
+  document.getElementById("historySection").classList.remove("hidden");
+
+  const list = document.getElementById("historyList");
+
+  if (vehicle.history.length === 0) {
+    list.innerHTML = '<div class="empty-history">No history events yet.</div>';
+    return;
+  }
+
+  list.innerHTML = "";
+
+  vehicle.history.forEach(event => {
+    let item = document.createElement("div");
+    item.className = "event-item";
+
+    let date = document.createElement("div");
+    date.className = "event-date";
+    date.textContent = formatDate(event.date);
+
+    let title = document.createElement("div");
+    title.className = "event-title";
+    title.textContent = event.title || "";
+
+    let description = document.createElement("div");
+    description.className = "event-description";
+    description.textContent = event.description || "";
+
+    item.appendChild(date);
+    item.appendChild(title);
+    item.appendChild(description);
+
+    list.appendChild(item);
+  });
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "";
+
+  const parts = dateString.split("-");
+  if (parts.length === 3) {
+    return parts[2] + "/" + parts[1] + "/" + parts[0];
+  }
+
+  return dateString;
+}
+
+function showEventForm() {
+  const serial = getSerial();
+
+  if (!serial) {
+    showMessage("Please enter Serial Number first.", "red");
+    return;
+  }
+
+  let data = getData();
+  let index = getVehicleIndex(data, serial);
+
+  if (index === -1) {
+    showMessage("Please SAVE the vehicle first.", "red");
+    return;
+  }
+
+  document.getElementById("eventForm").classList.remove("hidden");
+
+  document.getElementById("eventDate").value =
+    new Date().toISOString().slice(0, 10);
+
+  document.getElementById("eventTitle").value = "";
+  document.getElementById("eventDescription").value = "";
+}
+
+function hideEventForm() {
+  document.getElementById("eventForm").classList.add("hidden");
+}
+
+function saveEvent() {
+  const serial = getSerial();
+  const date = document.getElementById("eventDate").value;
+  const title = document.getElementById("eventTitle").value.trim();
+  const description = document.getElementById("eventDescription").value.trim();
+
+  if (!date) {
+    showMessage("Please select Event Date.", "red");
+    return;
+  }
+
+  if (!title) {
+    showMessage("Please enter Event Title.", "red");
+    return;
+  }
+
+  let data = getData();
+  let index = getVehicleIndex(data, serial);
+
+  if (index === -1) {
+    showMessage("Vehicle not found.", "red");
+    return;
+  }
+
+  if (!Array.isArray(data[index].history)) {
+    data[index].history = [];
+  }
+
+  data[index].history.push({
+    date: date,
+    title: title,
+    description: description
+  });
+
+  saveData(data);
+
+  hideEventForm();
+  displayHistory(serial);
+
+  showMessage("Event added successfully.", "green");
+}
+
+function clearForm() {
+  document.getElementById("customer").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("vehicleName").value = "";
+  document.getElementById("model").value = "";
+  document.getElementById("serial").value = "";
+
+  document.getElementById("historySection").classList.add("hidden");
+  document.getElementById("eventForm").classList.add("hidden");
+
+  showMessage("", "");
+}
+
+</script>
+
+</body>
+</html>
