@@ -1,0 +1,10 @@
+{
+  "name": "NVN Forklift Database",
+  "short_name": "NVN APP",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "orientation": "portrait",
+  "description": "NVN Forklift Database"
+}
