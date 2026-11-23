@@ -618,22 +618,24 @@ async function adminLogin() {
 <script>
 document.getElementById("excelFile").addEventListener("change", async function(e) {
 
-  if (!adminSession || !adminSession.access_token) {
-    showStatus("Admin login required");
-    return;
-  }
-
-  const file = e.target.files[0];
-  if (!file) return;
-
   try {
+
+    if (!adminSession || !adminSession.access_token) {
+      showStatus("Admin login required");
+      return;
+    }
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    showStatus("Reading Excel file...");
+
     const data = await file.arrayBuffer();
     const workbook = XLSX.read(data, {type: "array"});
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
     const rows = XLSX.utils.sheet_to_json(sheet, {defval: ""});
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       showStatus("Excel file is empty");
       return;
     }
@@ -649,16 +651,17 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     const valid = vehicles.filter(v => v.serial);
     const missing = vehicles.length - valid.length;
 
-    if (valid.length === 0) {
+    if (!valid.length) {
       showStatus("No valid SERIAL found");
       return;
     }
 
-    const existingData = await apiRequest(
-  "/vehicles?select=serial"
-);
+    showStatus("Checking existing vehicles...");
+
+    const existingData = await apiRequest("/vehicles?select=serial");
+
     const existingSerials = new Set(
-      existingData.map(v => String(v.serial).trim().toLowerCase())
+      (existingData || []).map(v => String(v.serial || "").trim().toLowerCase())
     );
 
     const fileSerials = new Set();
@@ -677,43 +680,42 @@ document.getElementById("excelFile").addEventListener("change", async function(e
       newVehicles.push(v);
     }
 
-    if (newVehicles.length === 0) {
+    if (!newVehicles.length) {
       showStatus("No new vehicles to import");
       return;
     }
 
     const confirmImport = confirm(
-      "Vehicles to import: " + newVehicles.length +
+      "New vehicles: " + newVehicles.length +
       "\nDuplicates skipped: " + duplicates +
       "\nMissing SERIAL: " + missing +
-      "\n\nContinue import?"
+      "\n\nImport these vehicles?"
     );
 
     if (!confirmImport) return;
 
-    const response = await apiRequest("/vehicles", {
+    showStatus("Importing vehicles...");
+
+    await apiRequest("/vehicles", {
       method: "POST",
       body: JSON.stringify(newVehicles)
     });
 
-    if (!response.ok) {
-      showStatus("Import failed");
-      return;
-    }
-
     showStatus(
       "Import successful: " + newVehicles.length +
-      " vehicles. Skipped: " + duplicates +
+      " vehicles. Duplicates skipped: " + duplicates +
       ". Missing SERIAL: " + missing
     );
 
   } catch (error) {
-    console.error(error);
-    showStatus("Excel import error");
-alert(error.message);
+    console.error("Excel import error:", error);
+    showStatus("IMPORT ERROR: " + error.message);
+    alert("IMPORT ERROR:\n" + error.message);
+
+  } finally {
+    e.target.value = "";
   }
 
-  e.target.value = "";
 });
 </script>
 </body>
