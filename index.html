@@ -718,6 +718,7 @@ document.getElementById("excelFile").addEventListener("change", async function(e
   } catch (error) {
     console.error(error);
     showStatus("Excel import error");
+alert(error.message);
   }
 
   e.target.value = "";
