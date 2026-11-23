@@ -1,102 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#1f2937">
 <title>NVN Forklift Database</title>
 <link rel="manifest" href="./manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="NVN Database">
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f4f7;
-  margin: 0;
-  padding: 15px;
-  color: #222;
-}
-
-.container {
-  max-width: 600px;
-  margin: auto;
-}
-
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #1f2937;
-}
-
-input, textarea, button {
-  width: 100%;
-  padding: 12px;
-  margin: 7px 0;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-textarea { resize: vertical; }
-
-button {
-  border: none;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.save { background: #198754; }
-.search { background: #0d6efd; }
-.clear { background: #6c757d; }
-.add-event { background: #1f2937; }
-.event-save { background: #198754; }
-.delete-vehicle { background: #dc3545; }
-
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 15px;
-  margin-top: 15px;
-  box-shadow: 0 2px 6px #00000012;
-}
-
-.event {
-  border-left: 3px solid #0d6efd;
-  padding: 10px;
-  margin: 12px 0;
-  background: #f8f9fa;
-}
-
-.event-date {
-  color: #555;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.hidden { display: none; }
-
-#status {
-  text-align: center;
-  margin: 10px 0;
-  font-size: 14px;
-  word-break: break-word;
-}
-
-input.search-found {
-  background: #ffeb3b !important;
-  opacity: 1 !important;
+*{box-sizing:border-box}
+body{font-family:Arial;background:#f2f4f7;margin:0;padding:15px;color:#222}
+.container{max-width:650px;margin:auto}
+h2{text-align:center;color:#1f2937}
+input,textarea,select,button{width:100%;padding:12px;margin:7px 0;font-size:16px;border-radius:6px;border:1px solid #ccc}
+button{border:0;color:white;font-weight:bold}
+.save{background:#198754}
+.search{background:#0d6efd}
+.clear{background:#6c757d}
+.dark{background:#1f2937}
+.delete{background:#dc3545}
+.purple{background:#6f42c1}
+.hidden{display:none!important}
+.card{background:white;border-radius:10px;padding:15px;margin-top:15px;box-shadow:0 2px 6px #0001}
+.event{border-left:3px solid #0d6efd;padding:10px;margin:12px 0;background:#f8f9fa}
+.found{background:#ffeb3b!important}
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
+.qv,.item{border:1px solid #ccc;border-radius:8px;padding:10px;margin:10px 0;background:#fff}
+.preview{background:white;padding:14px}
+.preview table{width:100%;border-collapse:collapse;font-size:12px}
+.preview th,.preview td{border:1px solid #444;padding:5px;vertical-align:top}
+.preview h2{margin:10px 0}
+@media print{
+body *{visibility:hidden}
+#preview,#preview *{visibility:visible}
+#preview{position:absolute;left:0;top:0;width:100%;padding:10mm}
+.noprint{display:none!important}
 }
 </style>
 </head>
-
 <body>
-<div class="container">
 
+<div class="container" id="db">
 <h2>NVN FORKLIFT DATABASE</h2>
 
 <input id="customer" placeholder="Customer Name">
@@ -105,968 +49,859 @@ input.search-found {
 <input id="model" placeholder="Model">
 <input id="serial" placeholder="Serial Number">
 
-<button id="saveBtn" class="save"
-onclick="saveVehicle()" style="display:none;">SAVE</button>
-
+<button id="saveBtn" class="save hidden" onclick="saveVehicle()">SAVE</button>
 <button class="search" onclick="searchVehicle()">SEARCH</button>
 <button class="clear" onclick="clearForm()">CLEAR</button>
+<button id="delBtn" class="delete hidden" onclick="deleteVehicle()">DELETE VEHICLE</button>
+<button id="importBtn" class="dark hidden" onclick="excelFile.click()">TRUCK DATA UPLOAD</button>
 
-<button id="deleteVehicleBtn"
-class="delete-vehicle hidden"
-onclick="deleteVehicle()">DELETE VEHICLE</button>
-
-<button id="importBtn" class="add-event hidden"
-onclick="document.getElementById('excelFile').click()">
-TRUCK DATA UPLOAD
-</button>
-
-<input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden">
-
+<input id="excelFile" type="file" accept=".xlsx,.xls" class="hidden">
 <div id="status"></div>
 
-<div id="historySection" class="card hidden">
-
+<div id="history" class="card hidden">
 <h3>History</h3>
-
-<button class="add-event" onclick="showEventForm()">
-+ ADD EVENT
-</button>
+<button class="dark" onclick="showEventForm()">+ ADD EVENT</button>
 
 <div id="eventForm" class="hidden">
-
 <input type="date" id="eventDate">
 <input id="eventTitle" placeholder="Title">
-
-<textarea id="eventDescription"
-placeholder="Description" rows="4"></textarea>
-
-<button class="event-save" onclick="saveEvent()">
-SAVE EVENT
-</button>
-
-<button class="clear" onclick="hideEventForm()">
-CANCEL
-</button>
-
+<textarea id="eventDescription" placeholder="Description"></textarea>
+<button class="save" onclick="saveEvent()">SAVE EVENT</button>
+<button class="clear" onclick="hideEventForm()">CANCEL</button>
 </div>
 
 <div id="historyList"></div>
 </div>
+
+<div class="card">
+<button class="dark" onclick="toggleAdmin()">ADMIN LOGIN</button>
+
+<div id="loginForm" class="hidden">
+<input id="adminEmail" type="email" placeholder="Admin Email">
+<input id="adminPassword" type="password" placeholder="Password">
+<button class="search" onclick="adminLogin()">LOGIN</button>
+<button class="clear" onclick="toggleAdmin()">CANCEL</button>
+</div>
+
+<div id="adminStatus"></div>
+<button id="quoteBtn" class="purple hidden" onclick="openQuote()">QUOTATION</button>
+</div>
+</div>
+
+<div class="container hidden" id="quoteApp">
+<button class="clear noprint" onclick="closeQuote()">← BACK TO DATABASE</button>
+<h2>NVN QUOTATION</h2>
+
+<div class="card noprint">
+<select id="quoteType" onchange="typeChanged()">
+<option>REPAIR & SPARE PARTS</option>
+<option>NEW FORKLIFT RENTAL</option>
+<option>USED FORKLIFT RENTAL</option>
+<option>NEW FORKLIFT SALES</option>
+</select>
+<div id="typeNotice"></div>
+</div>
+
+<div id="quoteForm" class="card noprint">
+<h3>Quotation Information</h3>
+
+<input id="qc" placeholder="Customer">
+<input id="qa" placeholder="Attn">
+<input id="qe" placeholder="Email">
+
+<div class="row">
+<input id="qr" placeholder="Ref No">
+<input id="qd" type="date">
+</div>
+
+<input id="qfrom" value="Duong Bao Nguyen" placeholder="From">
+
+<div class="row">
+<input id="qphone" value="0869 289 179" placeholder="Mobile">
+<input id="qemail" value="nvn4@bpi.com.vn" placeholder="Email">
+</div>
+
+<input id="qsub" placeholder="Subject">
+
+<h3>Vehicles / Items</h3>
+<div id="vehicles"></div>
+
+<button class="dark" onclick="addVehicle()">+ ADD VEHICLE</button>
+
+<h3>Totals</h3>
+
+<div class="row">
+<input id="discount" type="number" value="0" min="0" placeholder="Discount">
+<select id="vat">
+<option value="8">VAT 8%</option>
+<option value="10">VAT 10%</option>
+<option value="0">VAT 0%</option>
+</select>
+</div>
+
+<div id="totals"></div>
+
+<input id="payment" placeholder="Payment term">
+<input id="delivery" placeholder="Delivery">
+<input id="validity" placeholder="Validity">
+
+<button class="purple" onclick="renderQuotePreview()">PREVIEW QUOTATION</button>
+</div>
+
+<div id="preview" class="preview hidden"></div>
+
+<div id="printActions" class="noprint hidden">
+<button class="save" onclick="window.print()">PRINT / SAVE PDF</button>
+<button class="clear" onclick="editQuote()">EDIT</button>
+</div>
 </div>
 
 <script>
+const URL="https://zqptyvkvvzsyvvouvcgf.supabase.co";
+const KEY="sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
+const API=URL+"/rest/v1";
 
-// SUPABASE CONNECTION
+let adminSession=null;
+let currentVehicleId=null;
+let searched=false;
 
-const SUPABASE_URL =
-"https://zqptyvkvvzsyvvouvcgf.supabase.co";
-
-const SUPABASE_KEY =
-"sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
-
-const API = SUPABASE_URL + "/rest/v1";
-
-let currentVehicleId = null;
-let searchedVehicleForDelete = false;
-
-
-// API REQUEST
-
-async function apiRequest(url, options = {}) {
-
-  const response = await fetch(API + url, {
-    ...options,
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization":
-        "Bearer " + (adminSession?.access_token || SUPABASE_KEY),
-      "Content-Type": "application/json",
-      "Prefer": "return=representation",
-      ...(options.headers || {})
-    }
-  });
-
-  const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(text || response.statusText);
-  }
-
-  return text ? JSON.parse(text) : null;
+async function api(path,opt={}){
+let r=await fetch(API+path,{
+...opt,
+headers:{
+apikey:KEY,
+Authorization:"Bearer "+(adminSession?.access_token||KEY),
+"Content-Type":"application/json",
+Prefer:"return=representation",
+...(opt.headers||{})
+}
+});
+let t=await r.text();
+if(!r.ok)throw Error(t||r.statusText);
+return t?JSON.parse(t):null;
 }
 
-
-// STATUS
-
-function showStatus(message) {
-  document.getElementById("status").textContent = message;
+function status(s){
+document.getElementById("status").textContent=s;
 }
 
-
-// DELETE BUTTON VISIBILITY
-
-function updateDeleteButton() {
-
-  const button = document.getElementById("deleteVehicleBtn");
-
-  if (
-    adminSession &&
-    adminSession.access_token &&
-    currentVehicleId &&
-    searchedVehicleForDelete
-  ) {
-    button.classList.remove("hidden");
-  } else {
-    button.classList.add("hidden");
-  }
+function updateDel(){
+delBtn.classList.toggle("hidden",!(adminSession?.access_token&&currentVehicleId&&searched));
 }
 
-
-// SAVE VEHICLE
-
-async function saveVehicle() {
-
-  if (!adminSession || !adminSession.access_token) {
-    showStatus("Admin login required");
-    return;
-  }
-
-  const customer =
-    document.getElementById("customer").value.trim();
-
-  const location =
-    document.getElementById("location").value.trim();
-
-  const vehicle_name =
-    document.getElementById("vehicle_name").value.trim();
-
-  const model =
-    document.getElementById("model").value.trim();
-
-  const serial =
-    document.getElementById("serial").value.trim();
-
-  if (!serial) {
-    showStatus("Serial Number is required");
-    return;
-  }
-
-  try {
-
-    showStatus("Saving...");
-
-    const existing = await apiRequest(
-      "/vehicles?serial=eq." +
-      encodeURIComponent(serial) +
-      "&select=*"
-    );
-
-    const data = {
-      customer,
-      location,
-      vehicle_name,
-      model,
-      serial
-    };
-
-    if (existing && existing.length > 0) {
-
-      await apiRequest(
-        "/vehicles?id=eq." + existing[0].id,
-        {
-          method: "PATCH",
-          body: JSON.stringify(data)
-        }
-      );
-
-      currentVehicleId = existing[0].id;
-      searchedVehicleForDelete = false;
-      updateDeleteButton();
-
-      showStatus("Vehicle updated successfully");
-
-    } else {
-
-      const vehicle = await apiRequest(
-        "/vehicles",
-        {
-          method: "POST",
-          body: JSON.stringify(data)
-        }
-      );
-
-      currentVehicleId = vehicle[0].id;
-      searchedVehicleForDelete = false;
-      updateDeleteButton();
-
-      showStatus("Vehicle saved successfully");
-    }
-
-    document.getElementById("historySection")
-      .classList.remove("hidden");
-
-    await loadHistory();
-
-  } catch (error) {
-
-    showStatus("ERROR: " + error.message);
-
-  }
+async function saveVehicle(){
+if(!adminSession){status("Admin login required");return}
+let d={
+customer:customer.value.trim(),
+location:location.value.trim(),
+vehicle_name:vehicle_name.value.trim(),
+model:model.value.trim(),
+serial:serial.value.trim()
+};
+if(!d.serial){status("Serial Number is required");return}
+try{
+status("Saving...");
+let x=await api("/vehicles?serial=eq."+encodeURIComponent(d.serial)+"&select=*");
+if(x.length){
+await api("/vehicles?id=eq."+x[0].id,{method:"PATCH",body:JSON.stringify(d)});
+currentVehicleId=x[0].id;
+searched=false;
+status("Vehicle updated");
+}else{
+let z=await api("/vehicles",{method:"POST",body:JSON.stringify(d)});
+currentVehicleId=z[0].id;
+searched=false;
+status("Vehicle saved");
+}
+updateDel();
+document.getElementById("history").classList.remove("hidden");
+await loadHistory();
+}catch(e){status("ERROR: "+e.message)}
 }
 
+async function searchVehicle(){
+searched=false;
+updateDel();
+let k=serial.value.trim().toUpperCase();
+if(!k){status("Enter Search Keyword");return}
+try{
+status("Searching...");
+let all=await api("/vehicles?select=*");
+let m=all.filter(v=>[
+v.serial,v.customer,v.model,v.vehicle_name,v.location
+].some(x=>(x||"").toUpperCase().includes(k)));
 
-// SEARCH VEHICLE
+let b=document.getElementById("results");
+if(!b){
+b=document.createElement("div");
+b.id="results";
+document.getElementById("history").before(b);
+}
+b.innerHTML="";
 
-async function searchVehicle() {
-
-  searchedVehicleForDelete = false;
-  updateDeleteButton();
-
-  const keyword =
-    document.getElementById("serial").value.trim().toUpperCase();
-
-  if (!keyword) {
-    showStatus("Enter Search Keyword");
-    return;
-  }
-
-  try {
-
-    showStatus("Searching...");
-
-    const result = await apiRequest("/vehicles?select=*");
-
-    const matches = (result || []).filter(vehicle =>
-      [
-        vehicle.serial,
-        vehicle.customer,
-        vehicle.model,
-        vehicle.vehicle_name,
-        vehicle.location
-      ].some(value =>
-        (value || "").toUpperCase().includes(keyword)
-      )
-    );
-
-    let box = document.getElementById("searchResults");
-
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "searchResults";
-      document.getElementById("historySection").before(box);
-    }
-
-    box.innerHTML = "";
-
-    if (matches.length === 0) {
-
-      currentVehicleId = null;
-      searchedVehicleForDelete = false;
-      updateDeleteButton();
-
-      ["customer", "location", "vehicle_name", "model", "serial"]
-        .forEach(id => {
-          document.getElementById(id)
-            .classList.remove("search-found");
-        });
-
-      document.getElementById("historySection")
-        .classList.add("hidden");
-
-      showStatus("Vehicle not found");
-
-      return;
-    }
-
-    if (matches.length === 1) {
-
-      await selectVehicle(matches[0]);
-      showStatus("Vehicle found");
-
-      return;
-    }
-
-    showStatus(matches.length + " vehicles found");
-
-    matches.forEach(vehicle => {
-
-      const button = document.createElement("button");
-
-      button.style.display = "block";
-      button.style.width = "100%";
-      button.style.padding = "12px";
-      button.style.margin = "8px 0";
-      button.style.textAlign = "left";
-      button.style.background = "#ffffff";
-      button.style.color = "#222222";
-      button.style.border = "1px solid #cccccc";
-      button.style.borderRadius = "8px";
-      button.style.cursor = "pointer";
-
-      button.textContent =
-        (vehicle.customer || "") + " | " +
-        (vehicle.vehicle_name || "") + " | " +
-        (vehicle.model || "") + " | " +
-        (vehicle.serial || "");
-
-      button.onclick = async () => {
-
-        await selectVehicle(vehicle);
-
-        box.innerHTML = "";
-
-        showStatus("Vehicle found");
-
-      };
-
-      box.appendChild(button);
-
-    });
-
-  } catch (error) {
-
-    currentVehicleId = null;
-    searchedVehicleForDelete = false;
-    updateDeleteButton();
-
-    showStatus("ERROR: " + error.message);
-
-  }
+if(!m.length){
+currentVehicleId=null;
+updateDel();
+document.getElementById("history").classList.add("hidden");
+status("Vehicle not found");
+return;
 }
 
-
-// SELECT VEHICLE
-
-async function selectVehicle(vehicle) {
-
-  currentVehicleId = vehicle.id;
-  searchedVehicleForDelete = true;
-
-  document.getElementById("customer").value =
-    vehicle.customer || "";
-
-  document.getElementById("location").value =
-    vehicle.location || "";
-
-  document.getElementById("vehicle_name").value =
-    vehicle.vehicle_name || "";
-
-  document.getElementById("model").value =
-    vehicle.model || "";
-
-  document.getElementById("serial").value =
-    vehicle.serial || "";
-
-  ["customer", "location", "vehicle_name", "model", "serial"]
-    .forEach(id => {
-      document.getElementById(id)
-        .classList.add("search-found");
-    });
-
-  updateDeleteButton();
-
-  document.getElementById("historySection")
-    .classList.remove("hidden");
-
-  await loadHistory();
+if(m.length===1){
+await selectV(m[0]);
+status("Vehicle found");
+return;
 }
 
+status(m.length+" vehicles found");
 
-// CLEAR FORM
-
-function clearForm() {
-
-  document.getElementById("customer").value = "";
-  document.getElementById("location").value = "";
-  document.getElementById("vehicle_name").value = "";
-  document.getElementById("model").value = "";
-  document.getElementById("serial").value = "";
-
-  document.getElementById("historySection")
-    .classList.add("hidden");
-
-  document.getElementById("historyList").innerHTML = "";
-
-  const box = document.getElementById("searchResults");
-
-  if (box) box.innerHTML = "";
-
-  currentVehicleId = null;
-  searchedVehicleForDelete = false;
-
-  updateDeleteButton();
-
-  ["customer", "location", "vehicle_name", "model", "serial"]
-    .forEach(id => {
-      document.getElementById(id)
-        .classList.remove("search-found");
-    });
-
-  showStatus("");
+m.forEach(v=>{
+let bt=document.createElement("button");
+bt.style.cssText="background:white;color:#222;border:1px solid #ccc;text-align:left";
+bt.textContent=[v.customer,v.vehicle_name,v.model,v.serial].join(" | ");
+bt.onclick=async()=>{
+await selectV(v);
+b.innerHTML="";
+status("Vehicle found");
+};
+b.append(bt);
+});
+}catch(e){status("ERROR: "+e.message)}
 }
 
-
-// DELETE VEHICLE
-
-async function deleteVehicle() {
-
-  if (!adminSession || !adminSession.access_token) {
-    showStatus("Admin login required");
-    updateDeleteButton();
-    return;
-  }
-
-  if (!currentVehicleId || !searchedVehicleForDelete) {
-    showStatus("Please SEARCH a vehicle first");
-    updateDeleteButton();
-    return;
-  }
-
-  const customer =
-    document.getElementById("customer").value;
-
-  const vehicleName =
-    document.getElementById("vehicle_name").value;
-
-  const model =
-    document.getElementById("model").value;
-
-  const serial =
-    document.getElementById("serial").value;
-
-  const confirmation =
-    "DELETE THIS VEHICLE?\n\n" +
-    "Customer: " + customer + "\n" +
-    "Vehicle: " + vehicleName + "\n" +
-    "Model: " + model + "\n" +
-    "Serial: " + serial + "\n\n" +
-    "This will also delete its history.\n\n" +
-    "This action cannot be undone.";
-
-  if (!confirm(confirmation)) return;
-
-  try {
-
-    showStatus("Deleting vehicle history...");
-
-    const vehicleIdToDelete = currentVehicleId;
-
-    await apiRequest(
-      "/vehicle_history?vehicle_id=eq." +
-      encodeURIComponent(vehicleIdToDelete),
-      { method: "DELETE" }
-    );
-
-    showStatus("Deleting vehicle...");
-
-    await apiRequest(
-      "/vehicles?id=eq." +
-      encodeURIComponent(vehicleIdToDelete),
-      { method: "DELETE" }
-    );
-
-    clearForm();
-
-    showStatus("Vehicle deleted successfully");
-
-  } catch (error) {
-
-    showStatus("DELETE ERROR: " + error.message);
-
-  }
-}
-  // ADD EVENT
-
-function showEventForm() {
-
-  if (!adminSession || !adminSession.access_token) {
-    showStatus("Admin login required");
-    return;
-  }
-
-  if (!currentVehicleId) {
-    showStatus("Please SAVE or SEARCH a vehicle first");
-    return;
-  }
-
-  document.getElementById("eventForm")
-    .classList.remove("hidden");
-
-  document.getElementById("eventDate").value =
-    new Date().toISOString().slice(0, 10);
+async function selectV(v){
+currentVehicleId=v.id;
+searched=true;
+["customer","location","vehicle_name","model","serial"].forEach(i=>{
+document.getElementById(i).value=v[i]||"";
+document.getElementById(i).classList.add("found");
+});
+updateDel();
+document.getElementById("history").classList.remove("hidden");
+await loadHistory();
 }
 
-
-function hideEventForm() {
-  document.getElementById("eventForm")
-    .classList.add("hidden");
+function clearForm(){
+["customer","location","vehicle_name","model","serial"].forEach(i=>{
+let e=document.getElementById(i);
+e.value="";
+e.classList.remove("found");
+});
+document.getElementById("history").classList.add("hidden");
+historyList.innerHTML="";
+if(results)results.innerHTML="";
+currentVehicleId=null;
+searched=false;
+updateDel();
+status("");
 }
 
-
-// SAVE EVENT
-
-async function saveEvent() {
-
-  if (!adminSession || !adminSession.access_token) {
-    showStatus("Admin login required");
-    return;
-  }
-
-  if (!currentVehicleId) {
-    showStatus("No vehicle selected");
-    return;
-  }
-
-  const event_date =
-    document.getElementById("eventDate").value;
-
-  const title =
-    document.getElementById("eventTitle").value.trim();
-
-  const description =
-    document.getElementById("eventDescription").value.trim();
-
-  if (!event_date || !title) {
-    showStatus("Date and Title are required");
-    return;
-  }
-
-  try {
-
-    showStatus("Saving event...");
-
-    await apiRequest("/vehicle_history", {
-      method: "POST",
-      body: JSON.stringify({
-        vehicle_id: currentVehicleId,
-        event_date,
-        title,
-        description
-      })
-    });
-
-    document.getElementById("eventDate").value = "";
-    document.getElementById("eventTitle").value = "";
-    document.getElementById("eventDescription").value = "";
-
-    hideEventForm();
-
-    await loadHistory();
-
-    showStatus("Event saved successfully");
-
-  } catch (error) {
-
-    showStatus("ERROR: " + error.message);
-
-  }
+async function deleteVehicle(){
+if(!adminSession){status("Admin login required");return}
+if(!currentVehicleId||!searched){status("SEARCH vehicle first");return}
+if(!confirm("DELETE THIS VEHICLE AND ITS HISTORY?\n"+customer.value+" | "+serial.value+"\nThis cannot be undone."))return;
+try{
+let id=currentVehicleId;
+status("Deleting history...");
+await api("/vehicle_history?vehicle_id=eq."+encodeURIComponent(id),{method:"DELETE"});
+status("Deleting vehicle...");
+await api("/vehicles?id=eq."+encodeURIComponent(id),{method:"DELETE"});
+clearForm();
+status("Vehicle deleted");
+}catch(e){status("DELETE ERROR: "+e.message)}
 }
 
-
-// LOAD HISTORY
-
-async function loadHistory() {
-
-  if (!currentVehicleId) return;
-
-  const events = await apiRequest(
-    "/vehicle_history?vehicle_id=eq." +
-    encodeURIComponent(currentVehicleId) +
-    "&select=*&order=event_date.desc,created_at.desc"
-  );
-
-  const list = document.getElementById("historyList");
-
-  list.innerHTML = "";
-
-  if (!events || events.length === 0) {
-    list.innerHTML = "<p>No history available</p>";
-    return;
-  }
-
-  events.forEach(event => {
-
-    const div = document.createElement("div");
-    div.className = "event";
-
-    const date = document.createElement("div");
-    date.className = "event-date";
-    date.textContent = event.event_date;
-
-    const title = document.createElement("strong");
-    title.textContent = event.title;
-
-    const description = document.createElement("p");
-    description.textContent = event.description || "";
-
-    div.appendChild(date);
-    div.appendChild(title);
-    div.appendChild(description);
-
-    list.appendChild(div);
-
-  });
+function showEventForm(){
+if(!adminSession){status("Admin login required");return}
+if(!currentVehicleId){status("SAVE or SEARCH a vehicle first");return}
+eventForm.classList.remove("hidden");
+eventDate.value=new Date().toISOString().slice(0,10);
 }
 
+function hideEventForm(){
+eventForm.classList.add("hidden");
+}
 
-// SERVICE WORKER
+async function saveEvent(){
+if(!adminSession||!currentVehicleId){status("Admin login required / select vehicle");return}
+if(!eventDate.value||!eventTitle.value.trim()){status("Date and Title required");return}
+try{
+await api("/vehicle_history",{
+method:"POST",
+body:JSON.stringify({
+vehicle_id:currentVehicleId,
+event_date:eventDate.value,
+title:eventTitle.value.trim(),
+description:eventDescription.value.trim()
+})
+});
+eventTitle.value=eventDescription.value="";
+hideEventForm();
+await loadHistory();
+status("Event saved");
+}catch(e){status("ERROR: "+e.message)}
+}
 
-if ("serviceWorker" in navigator) {
+async function loadHistory(){
+if(!currentVehicleId)return;
+let a=await api("/vehicle_history?vehicle_id=eq."+currentVehicleId+"&select=*&order=event_date.desc,created_at.desc");
+historyList.innerHTML="";
+if(!a.length){
+historyList.innerHTML="<p>No history available</p>";
+return;
+}
+a.forEach(v=>{
+let d=document.createElement("div");
+d.className="event";
+let date=document.createElement("div");
+date.textContent=v.event_date;
+let title=document.createElement("strong");
+title.textContent=v.title;
+let desc=document.createElement("p");
+desc.textContent=v.description||"";
+d.append(date,title,desc);
+historyList.append(d);
+});
+}
 
-  window.addEventListener("load", () => {
+function toggleAdmin(){
+loginForm.classList.toggle("hidden");
+}
 
-    navigator.serviceWorker.register("./sw.js")
-      .then(() => console.log("NVN PWA ready"))
-      .catch(err => console.error(err));
+async function adminLogin(){
+adminStatus.textContent="Logging in...";
+try{
+let r=await fetch(URL+"/auth/v1/token?grant_type=password",{
+method:"POST",
+headers:{apikey:KEY,"Content-Type":"application/json"},
+body:JSON.stringify({
+email:adminEmail.value.trim(),
+password:adminPassword.value
+})
+});
+let d=await r.json();
+if(!r.ok)throw Error(d.message||"Login failed");
+adminSession=d;
+adminStatus.textContent="Admin login successful";
+loginForm.classList.add("hidden");
+saveBtn.classList.remove("hidden");
+importBtn.classList.remove("hidden");
+quoteBtn.classList.remove("hidden");
+updateDel();
+}catch(e){
+adminSession=null;
+adminStatus.textContent="ERROR: "+e.message;
+quoteBtn.classList.add("hidden");
+updateDel();
+}
+  
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
 
-  });
+excelFile.addEventListener("change",async e=>{
+try{
+if(!adminSession){status("Admin login required");return}
+let f=e.target.files[0];
+if(!f)return;
+
+status("Reading Excel...");
+
+let w=XLSX.read(await f.arrayBuffer(),{type:"array"});
+let rows=XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]],{defval:""});
+
+let v=rows.map(r=>({
+customer:String(r.CUSTOMER||"").trim(),
+location:String(r.LOCATION||"").trim(),
+vehicle_name:String(r["VEHICLE NAME"]||"").trim(),
+model:String(r.MODEL||"").trim(),
+serial:String(r.SERIAL||"").trim()
+}));
+
+let valid=v.filter(x=>x.serial);
+let missing=v.length-valid.length;
+
+if(!valid.length){
+status("No valid SERIAL");
+return;
+}
+
+status("Checking existing vehicles...");
+
+let existing=await api("/vehicles?select=serial");
+let s=new Set(existing.map(x=>(x.serial||"").toLowerCase()));
+let seen=new Set();
+let add=[];
+let dups=0;
+
+valid.forEach(x=>{
+let z=x.serial.toLowerCase();
+if(s.has(z)||seen.has(z)){
+dups++;
+}else{
+seen.add(z);
+add.push(x);
+}
+});
+
+if(!add.length){
+status("No new vehicles");
+return;
+}
+
+if(!confirm(
+"New: "+add.length+
+"\nDuplicates: "+dups+
+"\nMissing serial: "+missing+
+"\nImport?"
+))return;
+
+await api("/vehicles",{
+method:"POST",
+body:JSON.stringify(add)
+});
+
+status(
+"Imported "+add.length+
+"; duplicates "+dups+
+"; missing "+missing
+);
+
+}catch(e){
+status("IMPORT ERROR: "+e.message);
+alert(e.message);
+}finally{
+e.target.value="";
+}
+});
+
+</script>
+
+<script>
+
+// QUOTATION MODULE
+
+let vn=0;
+
+function openQuote(){
+if(!adminSession){
+status("Admin login required");
+return;
+}
+
+db.classList.add("hidden");
+quoteApp.classList.remove("hidden");
+qd.value=new Date().toISOString().slice(0,10);
+vehicles.innerHTML="";
+vn=0;
+addVehicle();
+typeChanged();
+}
+
+function closeQuote(){
+quoteApp.classList.add("hidden");
+db.classList.remove("hidden");
+document.getElementById("preview").classList.add("hidden");
+printActions.classList.add("hidden");
+quoteForm.classList.remove("hidden");
+}
+
+function typeChanged(){
+let implemented=quoteType.value==="REPAIR & SPARE PARTS";
+quoteForm.classList.toggle("hidden",!implemented);
+
+typeNotice.textContent=implemented
+?"REPAIR & SPARE PARTS quotation form"
+:"This quotation type is selected but not implemented yet. Repair & Spare Parts is currently available.";
+
+document.getElementById("preview").classList.add("hidden");
+printActions.classList.add("hidden");
+}
+
+function addVehicle(){
+vn++;
+
+let v=document.createElement("div");
+v.className="qv";
+
+v.innerHTML=`
+<h4>Vehicle ${vn}</h4>
+
+<div class="row">
+<input class="vname" placeholder="Vehicle Name">
+<input class="vmodel" placeholder="Model">
+</div>
+
+<div class="row">
+<input class="vsn" placeholder="S/N">
+<input class="vtruck" placeholder="Truck No">
+</div>
+
+<button class="search noprint" onclick="lookup(this)">
+SEARCH DATABASE BY S/N
+</button>
+
+<div class="lookup noprint"></div>
+<div class="items"></div>
+
+<button class="dark noprint" onclick="addItem(this)">
++ ADD ITEM
+</button>
+
+<button class="delete noprint"
+onclick="this.closest('.qv').remove();totalsCalc()">
+REMOVE VEHICLE
+</button>
+`;
+
+vehicles.append(v);
+addItem(v.querySelector(".dark"));
+}
+
+function addItem(b){
+
+let list=b.closest(".qv").querySelector(".items");
+let i=document.createElement("div");
+i.className="item";
+
+i.innerHTML=`
+<input class="desc" placeholder="Description">
+
+<div class="row">
+<input class="qty" type="number" min="0" value="1">
+<input class="unit" placeholder="Unit">
+</div>
+
+<div class="row">
+<input class="price" type="number" min="0" placeholder="Unit Price">
+<input class="amount" placeholder="Amount" readonly>
+</div>
+
+<input class="remarks" placeholder="Remarks">
+
+<button class="delete noprint"
+onclick="this.closest('.item').remove();totalsCalc()">
+REMOVE ITEM
+</button>
+`;
+
+list.append(i);
+
+i.querySelectorAll(".qty,.price").forEach(x=>{
+x.addEventListener("input",()=>calc(i));
+});
+
+calc(i);
+}
+
+function calc(i){
+let a=(+i.querySelector(".qty").value||0)*
+(+i.querySelector(".price").value||0);
+
+i.querySelector(".amount").value=
+a.toLocaleString("en-US",{maximumFractionDigits:2});
+
+totalsCalc();
+}
+
+function dataQ(){
+
+return [...document.querySelectorAll(".qv")].map(v=>({
+
+name:v.querySelector(".vname").value,
+model:v.querySelector(".vmodel").value,
+sn:v.querySelector(".vsn").value,
+truck:v.querySelector(".vtruck").value,
+
+items:[...v.querySelectorAll(".item")].map(i=>({
+
+desc:i.querySelector(".desc").value,
+qty:+i.querySelector(".qty").value||0,
+unit:i.querySelector(".unit").value,
+price:+i.querySelector(".price").value||0,
+
+amount:
+(+i.querySelector(".qty").value||0)*
+(+i.querySelector(".price").value||0),
+
+remarks:i.querySelector(".remarks").value
+
+}))
+
+}));
+}
+
+function totalsCalc(){
+
+let sub=dataQ().reduce(
+(s,v)=>s+v.items.reduce((a,i)=>a+i.amount,0),0
+);
+
+let dis=Math.max(0,+discount.value||0);
+let base=Math.max(0,sub-dis);
+let rate=+vat.value||0;
+let tax=base*rate/100;
+let total=base+tax;
+
+let fmt=n=>n.toLocaleString("en-US",{maximumFractionDigits:2});
+
+totals.innerHTML=
+"Subtotal: "+fmt(sub)+
+"<br>Discount: "+fmt(dis)+
+"<br>VAT "+rate+"%: "+fmt(tax)+
+"<br><strong>Grand Total: "+fmt(total)+"</strong>";
+
+return{sub,dis,rate,tax,total};
+}
+
+async function lookup(b){
+
+let sn=b.closest(".qv").querySelector(".vsn").value.trim();
+let box=b.nextElementSibling;
+
+if(!sn){
+box.textContent="Enter S/N";
+return;
+}
+
+box.textContent="Searching...";
+
+try{
+
+let a=await api(
+"/vehicles?serial=ilike."+encodeURIComponent("%"+sn+"%")+"&select=*"
+);
+
+box.innerHTML="";
+
+if(!a.length){
+box.textContent="Not found; fill manually";
+return;
+}
+
+a.forEach(v=>{
+
+let bt=document.createElement("button");
+bt.style.cssText="background:#eee;color:#222";
+bt.textContent=[v.customer,v.vehicle_name,v.model,v.serial].join(" | ");
+
+bt.onclick=()=>{
+let card=b.closest(".qv");
+card.querySelector(".vname").value=v.vehicle_name||"";
+card.querySelector(".vmodel").value=v.model||"";
+card.querySelector(".vsn").value=v.serial||"";
+box.textContent="Vehicle details loaded";
+};
+
+box.append(bt);
+});
+
+}catch(e){
+box.textContent="Search error: "+e.message;
+}
+}
+
+discount.addEventListener("input",totalsCalc);
+vat.addEventListener("change",totalsCalc);
+
+</script>
+<script>
+
+function renderQuotePreview(){
+
+if(quoteType.value!=="REPAIR & SPARE PARTS"){
+alert("This type is not implemented yet.");
+return;
+}
+
+let ds=dataQ();
+let t=totalsCalc();
+
+let esc=s=>String(s||"").replace(/[&<>"]/g,c=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;"
+}[c]));
+
+let fmt=n=>n.toLocaleString("en-US",{maximumFractionDigits:2});
+
+let counter=1;
+let body="";
+
+ds.forEach(v=>{
+
+body+=`
+<tr>
+<td colspan="6">
+<b>
+${esc(v.name)} |
+Model: ${esc(v.model)} |
+S/N: ${esc(v.sn)} |
+Truck No: ${esc(v.truck)}
+</b>
+</td>
+</tr>
+`;
+
+v.items.forEach(i=>{
+
+body+=`
+<tr>
+<td>${counter++}</td>
+<td>${esc(i.desc)}${i.remarks?"<br>"+esc(i.remarks):""}</td>
+<td>${i.qty}</td>
+<td>${esc(i.unit)}</td>
+<td>${fmt(i.price)}</td>
+<td>${fmt(i.amount)}</td>
+</tr>
+`;
+
+});
+
+});
+
+document.getElementById("preview").innerHTML=`
+
+<div><b>NVN COMPANY LIMITED</b></div>
+
+<h2>QUOTATION</h2>
+
+<table style="border:0">
+<tr>
+<td>
+Customer: ${esc(qc.value)}<br>
+Attn: ${esc(qa.value)}<br>
+Email: ${esc(qe.value)}
+</td>
+
+<td>
+Ref No: ${esc(qr.value)}<br>
+Date: ${esc(qd.value)}<br>
+From: ${esc(qfrom.value)}<br>
+MP: ${esc(qphone.value)}<br>
+Email: ${esc(qemail.value)}
+</td>
+</tr>
+</table>
+
+<p><b>Sub:</b> ${esc(qsub.value)}</p>
+
+<table>
+<thead>
+<tr>
+<th>No.</th>
+<th>Description</th>
+<th>Qty</th>
+<th>Unit</th>
+<th>Unit Price</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody>
+${body}
+</tbody>
+</table>
+
+<table style="margin-top:8px">
+
+<tr>
+<td colspan="5" align="right">Subtotal</td>
+<td>${fmt(t.sub)}</td>
+</tr>
+
+<tr>
+<td colspan="5" align="right">Discount</td>
+<td>${fmt(t.dis)}</td>
+</tr>
+
+<tr>
+<td colspan="5" align="right">VAT ${t.rate}%</td>
+<td>${fmt(t.tax)}</td>
+</tr>
+
+<tr>
+<td colspan="5" align="right">
+<b>Grand Total</b>
+</td>
+<td><b>${fmt(t.total)}</b></td>
+</tr>
+
+</table>
+
+<p>
+Payment term: ${esc(payment.value)}<br>
+Delivery: ${esc(delivery.value)}<br>
+Validity: ${esc(validity.value)}
+</p>
+
+<p>
+Best regards,<br>
+<b>Le Van Thanh Tung</b><br>
+Managing Director
+</p>
+
+<hr>
+
+<small>
+NVN Co., Ltd - 64/1 Xuan Dieu Str., Tan Son Nhat Ward, HCMC<br>
+Bank account No. 0421000440035 (VND) at Vietcombank, Hung Vuong Branch, HCMC.
+</small>
+`;
+
+document.getElementById("preview").classList.remove("hidden");
+quoteForm.classList.add("hidden");
+printActions.classList.remove("hidden");
+document.getElementById("preview").scrollIntoView();
+
+}
+
+function editQuote(){
+
+document.getElementById("preview").classList.add("hidden");
+printActions.classList.add("hidden");
+quoteForm.classList.remove("hidden");
 
 }
 
 
 // UPPERCASE INPUT
 
-document.querySelectorAll("input, textarea")
-  .forEach(el => {
+document.querySelectorAll("input,textarea").forEach(el=>{
 
-    el.addEventListener("input", function() {
+el.addEventListener("input",function(){
 
-      const start = this.selectionStart;
-      const end = this.selectionEnd;
+if(this.type==="number")return;
 
-      this.value = this.value.toUpperCase();
+let s=this.selectionStart;
+let e=this.selectionEnd;
 
-      this.setSelectionRange(start, end);
+this.value=this.value.toUpperCase();
 
-    });
-
-  });
-
-
-// ADMIN LOGIN
-
-let adminSession = null;
-
-
-function toggleAdminLogin() {
-
-  const form = document.getElementById("adminLoginForm");
-
-  form.style.display =
-    form.style.display === "none" ? "block" : "none";
-
-}
-
-
-async function adminLogin() {
-
-  const email =
-    document.getElementById("adminEmail").value.trim();
-
-  const password =
-    document.getElementById("adminPassword").value;
-
-  const status =
-    document.getElementById("adminStatus");
-
-  status.textContent = "Logging in...";
-
-  try {
-
-    const response = await fetch(
-      SUPABASE_URL + "/auth/v1/token?grant_type=password",
-      {
-        method: "POST",
-        headers: {
-          "apikey": SUPABASE_KEY,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(
-        data.message || data.msg || "Login failed"
-      );
-    }
-
-    adminSession = data;
-
-    status.textContent = "Admin login successful";
-
-    document.getElementById("adminLoginForm")
-      .style.display = "none";
-
-    document.getElementById("saveBtn")
-      .style.display = "block";
-
-    document.getElementById("importBtn")
-      .classList.remove("hidden");
-
-    updateDeleteButton();
-
-  } catch (error) {
-
-    adminSession = null;
-
-    status.textContent = "ERROR: " + error.message;
-
-    updateDeleteButton();
-
-  }
-
-}
-
-
-// EXCEL LIBRARY
-
-</script>
-
-<div id="adminBox"
-style="margin-top:20px;padding:12px;background:#fff;border-radius:8px;">
-
-  <button onclick="toggleAdminLogin()"
-  style="background:#343a40;">
-    ADMIN LOGIN
-  </button>
-
-  <div id="adminLoginForm"
-  style="display:none;margin-top:10px;">
-
-    <input id="adminEmail"
-    type="email" placeholder="Admin Email">
-
-    <input id="adminPassword"
-    type="password" placeholder="Password">
-
-    <button onclick="adminLogin()"
-    style="background:#0d6efd;">
-      LOGIN
-    </button>
-
-    <button onclick="toggleAdminLogin()"
-    style="background:#6c757d;">
-      CANCEL
-    </button>
-
-  </div>
-
-  <div id="adminStatus" style="margin-top:10px;"></div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<script>
-
-// EXCEL IMPORT
-
-document.getElementById("excelFile")
-.addEventListener("change", async function(e) {
-
-  try {
-
-    if (!adminSession || !adminSession.access_token) {
-      showStatus("Admin login required");
-      return;
-    }
-
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    showStatus("Reading Excel file...");
-
-    const data = await file.arrayBuffer();
-
-    const workbook = XLSX.read(data, { type: "array" });
-
-    const sheet =
-      workbook.Sheets[workbook.SheetNames[0]];
-
-    const rows = XLSX.utils.sheet_to_json(
-      sheet,
-      { defval: "" }
-    );
-
-    if (!rows.length) {
-      showStatus("Excel file is empty");
-      return;
-    }
-
-    const vehicles = rows.map(row => ({
-      customer: String(row.CUSTOMER || "").trim(),
-      location: String(row.LOCATION || "").trim(),
-      vehicle_name: String(row["VEHICLE NAME"] || "").trim(),
-      model: String(row.MODEL || "").trim(),
-      serial: String(row.SERIAL || "").trim()
-    }));
-
-    const valid = vehicles.filter(v => v.serial);
-
-    const missing = vehicles.length - valid.length;
-
-    if (!valid.length) {
-      showStatus("No valid SERIAL found");
-      return;
-    }
-
-    // REMOVE DUPLICATES WITHIN THE EXCEL FILE
-
-    const fileSerials = new Set();
-
-    const uniqueVehicles = [];
-
-    let duplicates = 0;
-
-    for (const v of valid) {
-
-      const s = v.serial.trim().toLowerCase();
-
-      if (fileSerials.has(s)) {
-        duplicates++;
-        continue;
-      }
-
-      fileSerials.add(s);
-
-      uniqueVehicles.push(v);
-
-    }
-
-    // CHECK EXISTING SERIALS IN SMALL BATCHES
-
-    showStatus("Checking existing vehicles...");
-
-    const existingSerials = new Set();
-
-    const batchSize = 50;
-
-    for (
-      let i = 0;
-      i < uniqueVehicles.length;
-      i += batchSize
-    ) {
-
-      const batch = uniqueVehicles.slice(
-        i,
-        i + batchSize
-      );
-
-      const serialValues = batch.map(v =>
-        '"' + v.serial.replace(/"/g, '\\"') + '"'
-      ).join(",");
-
-      const query =
-        "/vehicles?select=serial&serial=in.(" +
-        encodeURIComponent(serialValues) +
-        ")";
-
-      const result = await apiRequest(query);
-
-      (result || []).forEach(v => {
-
-        existingSerials.add(
-          String(v.serial || "").trim().toLowerCase()
-        );
-
-      });
-
-    }
-
-    // FILTER EXISTING VEHICLES
-
-    const newVehicles = uniqueVehicles.filter(v => {
-
-      const s = v.serial.trim().toLowerCase();
-
-      if (existingSerials.has(s)) {
-        duplicates++;
-        return false;
-      }
-
-      return true;
-
-    });
-
-    if (!newVehicles.length) {
-
-      showStatus(
-        "No new vehicles to import. Duplicates skipped: " +
-        duplicates
-      );
-
-      return;
-    }
-
-    // CONFIRM
-
-    const confirmImport = confirm(
-      "New vehicles: " + newVehicles.length +
-      "\nDuplicates skipped: " + duplicates +
-      "\nMissing SERIAL: " + missing +
-      "\n\nImport these vehicles?"
-    );
-
-    if (!confirmImport) return;
-
-    // IMPORT IN BATCHES
-
-    showStatus("Importing vehicles...");
-
-    let imported = 0;
-
-    for (
-      let i = 0;
-      i < newVehicles.length;
-      i += batchSize
-    ) {
-
-      const batch = newVehicles.slice(
-        i,
-        i + batchSize
-      );
-
-      await apiRequest("/vehicles", {
-        method: "POST",
-        body: JSON.stringify(batch)
-      });
-
-      imported += batch.length;
-
-      showStatus(
-        "Importing... " + imported +
-        "/" + newVehicles.length
-      );
-
-    }
-
-    showStatus(
-      "Import successful: " + imported +
-      " vehicles. Duplicates skipped: " +
-      duplicates + ". Missing SERIAL: " + missing
-    );
-
-  } catch (error) {
-
-    console.error("Excel import error:", error);
-
-    showStatus("IMPORT ERROR: " + error.message);
-
-    alert("IMPORT ERROR:\n" + error.message);
-
-  } finally {
-
-    e.target.value = "";
-
-  }
+try{
+this.setSelectionRange(s,e);
+}catch(err){}
 
 });
 
-</script>
+});
 
+
+// SERVICE WORKER
+
+if("serviceWorker"in navigator){
+
+window.addEventListener("load",()=>{
+
+navigator.serviceWorker.register("./sw.js")
+.catch(console.error);
+
+});
+
+}
+
+</script>
 </body>
 </html>
