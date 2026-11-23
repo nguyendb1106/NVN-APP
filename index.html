@@ -519,5 +519,70 @@ document.querySelectorAll('input, textarea').forEach(el => {
   });
 });
 </script>
+<!-- ADMIN LOGIN -->
+<div id="adminBox" style="margin-top:20px;padding:12px;background:#fff;border-radius:8px;">
+  <button onclick="toggleAdminLogin()" style="background:#343a40;">
+    ADMIN LOGIN
+  </button>
+
+  <div id="adminLoginForm" style="display:none;margin-top:10px;">
+    <input id="adminEmail" type="email" placeholder="Admin Email">
+    <input id="adminPassword" type="password" placeholder="Password">
+
+    <button onclick="adminLogin()" style="background:#0d6efd;">
+      LOGIN
+    </button>
+
+    <button onclick="toggleAdminLogin()" style="background:#6c757d;">
+      CANCEL
+    </button>
+  </div>
+
+  <div id="adminStatus" style="margin-top:10px;"></div>
+</div>
+
+<script>
+let adminSession = null;
+
+function toggleAdminLogin() {
+  const form = document.getElementById("adminLoginForm");
+  form.style.display = form.style.display === "none" ? "block" : "none";
+}
+
+async function adminLogin() {
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+
+  const status = document.getElementById("adminStatus");
+  status.textContent = "Logging in...";
+
+  try {
+    const response = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || data.msg || "Login failed");
+    }
+
+    adminSession = data;
+
+    status.textContent = "Admin login successful";
+
+    document.getElementById("adminLoginForm").style.display = "none";
+
+  } catch (error) {
+    adminSession = null;
+    status.textContent = "ERROR: " + error.message;
+  }
+}
+</script>
 </body>
 </html>
