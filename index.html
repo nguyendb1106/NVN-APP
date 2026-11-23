@@ -394,6 +394,11 @@ function clearForm() {
 
 function showEventForm() {
 
+  if (!adminSession || !adminSession.access_token) {
+    showStatus("Admin login required");
+    return;
+  }
+
   if (!currentVehicleId) {
     showStatus("Please SAVE or SEARCH a vehicle first");
     return;
