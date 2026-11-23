@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +89,6 @@ button {
 
 input.search-found {
   background: #ffeb3b !important;
-  background-color: #ffeb3b !important;
   opacity: 1 !important;
 }
 </style>
@@ -107,17 +105,15 @@ input.search-found {
 <input id="model" placeholder="Model">
 <input id="serial" placeholder="Serial Number">
 
-<button id="saveBtn" class="save" onclick="saveVehicle()" style="display:none;">SAVE</button>
+<button id="saveBtn" class="save"
+onclick="saveVehicle()" style="display:none;">SAVE</button>
 
 <button class="search" onclick="searchVehicle()">SEARCH</button>
 <button class="clear" onclick="clearForm()">CLEAR</button>
 
-<button
-  id="deleteVehicleBtn"
-  class="delete-vehicle hidden"
-  onclick="deleteVehicle()">
-  DELETE VEHICLE
-</button>
+<button id="deleteVehicleBtn"
+class="delete-vehicle hidden"
+onclick="deleteVehicle()">DELETE VEHICLE</button>
 
 <button id="importBtn" class="add-event hidden"
 onclick="document.getElementById('excelFile').click()">
@@ -142,8 +138,7 @@ TRUCK DATA UPLOAD
 <input id="eventTitle" placeholder="Title">
 
 <textarea id="eventDescription"
-placeholder="Description"
-rows="4"></textarea>
+placeholder="Description" rows="4"></textarea>
 
 <button class="event-save" onclick="saveEvent()">
 SAVE EVENT
@@ -156,7 +151,6 @@ CANCEL
 </div>
 
 <div id="historyList"></div>
-
 </div>
 </div>
 
@@ -164,9 +158,11 @@ CANCEL
 
 // SUPABASE CONNECTION
 
-const SUPABASE_URL = "https://zqptyvkvvzsyvvouvcgf.supabase.co";
+const SUPABASE_URL =
+"https://zqptyvkvvzsyvvouvcgf.supabase.co";
 
-const SUPABASE_KEY = "sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
+const SUPABASE_KEY =
+"sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
 
 const API = SUPABASE_URL + "/rest/v1";
 
@@ -182,7 +178,8 @@ async function apiRequest(url, options = {}) {
     ...options,
     headers: {
       "apikey": SUPABASE_KEY,
-      "Authorization": "Bearer " + (adminSession?.access_token || SUPABASE_KEY),
+      "Authorization":
+        "Bearer " + (adminSession?.access_token || SUPABASE_KEY),
       "Content-Type": "application/json",
       "Prefer": "return=representation",
       ...(options.headers || {})
@@ -234,11 +231,20 @@ async function saveVehicle() {
     return;
   }
 
-  const customer = document.getElementById("customer").value.trim();
-  const location = document.getElementById("location").value.trim();
-  const vehicle_name = document.getElementById("vehicle_name").value.trim();
-  const model = document.getElementById("model").value.trim();
-  const serial = document.getElementById("serial").value.trim();
+  const customer =
+    document.getElementById("customer").value.trim();
+
+  const location =
+    document.getElementById("location").value.trim();
+
+  const vehicle_name =
+    document.getElementById("vehicle_name").value.trim();
+
+  const model =
+    document.getElementById("model").value.trim();
+
+  const serial =
+    document.getElementById("serial").value.trim();
 
   if (!serial) {
     showStatus("Serial Number is required");
@@ -250,7 +256,9 @@ async function saveVehicle() {
     showStatus("Saving...");
 
     const existing = await apiRequest(
-      "/vehicles?serial=eq." + encodeURIComponent(serial) + "&select=*"
+      "/vehicles?serial=eq." +
+      encodeURIComponent(serial) +
+      "&select=*"
     );
 
     const data = {
@@ -314,7 +322,8 @@ async function searchVehicle() {
   searchedVehicleForDelete = false;
   updateDeleteButton();
 
-  const keyword = document.getElementById("serial").value.trim().toUpperCase();
+  const keyword =
+    document.getElementById("serial").value.trim().toUpperCase();
 
   if (!keyword) {
     showStatus("Enter Search Keyword");
@@ -334,7 +343,9 @@ async function searchVehicle() {
         vehicle.model,
         vehicle.vehicle_name,
         vehicle.location
-      ].some(value => (value || "").toUpperCase().includes(keyword))
+      ].some(value =>
+        (value || "").toUpperCase().includes(keyword)
+      )
     );
 
     let box = document.getElementById("searchResults");
@@ -353,11 +364,14 @@ async function searchVehicle() {
       searchedVehicleForDelete = false;
       updateDeleteButton();
 
-      ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-        document.getElementById(id).classList.remove("search-found");
-      });
+      ["customer", "location", "vehicle_name", "model", "serial"]
+        .forEach(id => {
+          document.getElementById(id)
+            .classList.remove("search-found");
+        });
 
-      document.getElementById("historySection").classList.add("hidden");
+      document.getElementById("historySection")
+        .classList.add("hidden");
 
       showStatus("Vehicle not found");
 
@@ -426,25 +440,35 @@ async function searchVehicle() {
 async function selectVehicle(vehicle) {
 
   currentVehicleId = vehicle.id;
-
   searchedVehicleForDelete = true;
 
-  document.getElementById("customer").value = vehicle.customer || "";
-  document.getElementById("location").value = vehicle.location || "";
-  document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
-  document.getElementById("model").value = vehicle.model || "";
-  document.getElementById("serial").value = vehicle.serial || "";
+  document.getElementById("customer").value =
+    vehicle.customer || "";
 
-  ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-    document.getElementById(id).classList.add("search-found");
-  });
+  document.getElementById("location").value =
+    vehicle.location || "";
+
+  document.getElementById("vehicle_name").value =
+    vehicle.vehicle_name || "";
+
+  document.getElementById("model").value =
+    vehicle.model || "";
+
+  document.getElementById("serial").value =
+    vehicle.serial || "";
+
+  ["customer", "location", "vehicle_name", "model", "serial"]
+    .forEach(id => {
+      document.getElementById(id)
+        .classList.add("search-found");
+    });
 
   updateDeleteButton();
 
-  document.getElementById("historySection").classList.remove("hidden");
+  document.getElementById("historySection")
+    .classList.remove("hidden");
 
   await loadHistory();
-
 }
 
 
@@ -465,21 +489,20 @@ function clearForm() {
 
   const box = document.getElementById("searchResults");
 
-  if (box) {
-    box.innerHTML = "";
-  }
+  if (box) box.innerHTML = "";
 
   currentVehicleId = null;
   searchedVehicleForDelete = false;
 
   updateDeleteButton();
 
-  ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-    document.getElementById(id).classList.remove("search-found");
-  });
+  ["customer", "location", "vehicle_name", "model", "serial"]
+    .forEach(id => {
+      document.getElementById(id)
+        .classList.remove("search-found");
+    });
 
   showStatus("");
-
 }
 
 
@@ -499,10 +522,17 @@ async function deleteVehicle() {
     return;
   }
 
-  const customer = document.getElementById("customer").value;
-  const vehicleName = document.getElementById("vehicle_name").value;
-  const model = document.getElementById("model").value;
-  const serial = document.getElementById("serial").value;
+  const customer =
+    document.getElementById("customer").value;
+
+  const vehicleName =
+    document.getElementById("vehicle_name").value;
+
+  const model =
+    document.getElementById("model").value;
+
+  const serial =
+    document.getElementById("serial").value;
 
   const confirmation =
     "DELETE THIS VEHICLE?\n\n" +
@@ -513,9 +543,7 @@ async function deleteVehicle() {
     "This will also delete its history.\n\n" +
     "This action cannot be undone.";
 
-  if (!confirm(confirmation)) {
-    return;
-  }
+  if (!confirm(confirmation)) return;
 
   try {
 
@@ -523,29 +551,19 @@ async function deleteVehicle() {
 
     const vehicleIdToDelete = currentVehicleId;
 
-    // DELETE RELATED HISTORY FIRST
-
     await apiRequest(
       "/vehicle_history?vehicle_id=eq." +
       encodeURIComponent(vehicleIdToDelete),
-      {
-        method: "DELETE"
-      }
+      { method: "DELETE" }
     );
 
     showStatus("Deleting vehicle...");
 
-    // DELETE VEHICLE
-
     await apiRequest(
       "/vehicles?id=eq." +
       encodeURIComponent(vehicleIdToDelete),
-      {
-        method: "DELETE"
-      }
+      { method: "DELETE" }
     );
-
-    // RESET SCREEN
 
     clearForm();
 
@@ -556,11 +574,8 @@ async function deleteVehicle() {
     showStatus("DELETE ERROR: " + error.message);
 
   }
-
 }
-
-
-// ADD EVENT
+  // ADD EVENT
 
 function showEventForm() {
 
@@ -579,15 +594,12 @@ function showEventForm() {
 
   document.getElementById("eventDate").value =
     new Date().toISOString().slice(0, 10);
-
 }
 
 
 function hideEventForm() {
-
   document.getElementById("eventForm")
     .classList.add("hidden");
-
 }
 
 
@@ -605,9 +617,14 @@ async function saveEvent() {
     return;
   }
 
-  const event_date = document.getElementById("eventDate").value;
-  const title = document.getElementById("eventTitle").value.trim();
-  const description = document.getElementById("eventDescription").value.trim();
+  const event_date =
+    document.getElementById("eventDate").value;
+
+  const title =
+    document.getElementById("eventTitle").value.trim();
+
+  const description =
+    document.getElementById("eventDescription").value.trim();
 
   if (!event_date || !title) {
     showStatus("Date and Title are required");
@@ -618,18 +635,15 @@ async function saveEvent() {
 
     showStatus("Saving event...");
 
-    await apiRequest(
-      "/vehicle_history",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          vehicle_id: currentVehicleId,
-          event_date,
-          title,
-          description
-        })
-      }
-    );
+    await apiRequest("/vehicle_history", {
+      method: "POST",
+      body: JSON.stringify({
+        vehicle_id: currentVehicleId,
+        event_date,
+        title,
+        description
+      })
+    });
 
     document.getElementById("eventDate").value = "";
     document.getElementById("eventTitle").value = "";
@@ -646,7 +660,6 @@ async function saveEvent() {
     showStatus("ERROR: " + error.message);
 
   }
-
 }
 
 
@@ -658,7 +671,7 @@ async function loadHistory() {
 
   const events = await apiRequest(
     "/vehicle_history?vehicle_id=eq." +
-    currentVehicleId +
+    encodeURIComponent(currentVehicleId) +
     "&select=*&order=event_date.desc,created_at.desc"
   );
 
@@ -667,11 +680,8 @@ async function loadHistory() {
   list.innerHTML = "";
 
   if (!events || events.length === 0) {
-
     list.innerHTML = "<p>No history available</p>";
-
     return;
-
   }
 
   events.forEach(event => {
@@ -696,78 +706,68 @@ async function loadHistory() {
     list.appendChild(div);
 
   });
-
 }
 
-</script>
 
-<script>
+// SERVICE WORKER
+
 if ("serviceWorker" in navigator) {
+
   window.addEventListener("load", () => {
+
     navigator.serviceWorker.register("./sw.js")
       .then(() => console.log("NVN PWA ready"))
       .catch(err => console.error(err));
+
   });
+
 }
-</script>
 
-<script>
-document.querySelectorAll('input, textarea').forEach(el => {
-  el.addEventListener('input', function() {
-    const start = this.selectionStart;
-    const end = this.selectionEnd;
-    this.value = this.value.toUpperCase();
-    this.setSelectionRange(start, end);
+
+// UPPERCASE INPUT
+
+document.querySelectorAll("input, textarea")
+  .forEach(el => {
+
+    el.addEventListener("input", function() {
+
+      const start = this.selectionStart;
+      const end = this.selectionEnd;
+
+      this.value = this.value.toUpperCase();
+
+      this.setSelectionRange(start, end);
+
+    });
+
   });
-});
-</script>
 
-<!-- ADMIN LOGIN -->
 
-<div id="adminBox" style="margin-top:20px;padding:12px;background:#fff;border-radius:8px;">
-
-  <button onclick="toggleAdminLogin()" style="background:#343a40;">
-    ADMIN LOGIN
-  </button>
-
-  <div id="adminLoginForm" style="display:none;margin-top:10px;">
-
-    <input id="adminEmail" type="email" placeholder="Admin Email">
-    <input id="adminPassword" type="password" placeholder="Password">
-
-    <button onclick="adminLogin()" style="background:#0d6efd;">
-      LOGIN
-    </button>
-
-    <button onclick="toggleAdminLogin()" style="background:#6c757d;">
-      CANCEL
-    </button>
-
-  </div>
-
-  <div id="adminStatus" style="margin-top:10px;"></div>
-
-</div>
-
-<script>
+// ADMIN LOGIN
 
 let adminSession = null;
+
 
 function toggleAdminLogin() {
 
   const form = document.getElementById("adminLoginForm");
 
-  form.style.display = form.style.display === "none" ? "block" : "none";
+  form.style.display =
+    form.style.display === "none" ? "block" : "none";
 
 }
 
 
 async function adminLogin() {
 
-  const email = document.getElementById("adminEmail").value.trim();
-  const password = document.getElementById("adminPassword").value;
+  const email =
+    document.getElementById("adminEmail").value.trim();
 
-  const status = document.getElementById("adminStatus");
+  const password =
+    document.getElementById("adminPassword").value;
+
+  const status =
+    document.getElementById("adminStatus");
 
   status.textContent = "Logging in...";
 
@@ -788,18 +788,23 @@ async function adminLogin() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || data.msg || "Login failed");
+      throw new Error(
+        data.message || data.msg || "Login failed"
+      );
     }
 
     adminSession = data;
 
     status.textContent = "Admin login successful";
 
-    document.getElementById("adminLoginForm").style.display = "none";
+    document.getElementById("adminLoginForm")
+      .style.display = "none";
 
-    document.getElementById("saveBtn").style.display = "block";
+    document.getElementById("saveBtn")
+      .style.display = "block";
 
-    document.getElementById("importBtn").style.display = "block";
+    document.getElementById("importBtn")
+      .classList.remove("hidden");
 
     updateDeleteButton();
 
@@ -815,13 +820,52 @@ async function adminLogin() {
 
 }
 
+
+// EXCEL LIBRARY
+
 </script>
+
+<div id="adminBox"
+style="margin-top:20px;padding:12px;background:#fff;border-radius:8px;">
+
+  <button onclick="toggleAdminLogin()"
+  style="background:#343a40;">
+    ADMIN LOGIN
+  </button>
+
+  <div id="adminLoginForm"
+  style="display:none;margin-top:10px;">
+
+    <input id="adminEmail"
+    type="email" placeholder="Admin Email">
+
+    <input id="adminPassword"
+    type="password" placeholder="Password">
+
+    <button onclick="adminLogin()"
+    style="background:#0d6efd;">
+      LOGIN
+    </button>
+
+    <button onclick="toggleAdminLogin()"
+    style="background:#6c757d;">
+      CANCEL
+    </button>
+
+  </div>
+
+  <div id="adminStatus" style="margin-top:10px;"></div>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
 
-document.getElementById("excelFile").addEventListener("change", async function(e) {
+// EXCEL IMPORT
+
+document.getElementById("excelFile")
+.addEventListener("change", async function(e) {
 
   try {
 
@@ -838,11 +882,15 @@ document.getElementById("excelFile").addEventListener("change", async function(e
 
     const data = await file.arrayBuffer();
 
-    const workbook = XLSX.read(data, {type: "array"});
+    const workbook = XLSX.read(data, { type: "array" });
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const sheet =
+      workbook.Sheets[workbook.SheetNames[0]];
 
-    const rows = XLSX.utils.sheet_to_json(sheet, {defval: ""});
+    const rows = XLSX.utils.sheet_to_json(
+      sheet,
+      { defval: "" }
+    );
 
     if (!rows.length) {
       showStatus("Excel file is empty");
@@ -866,41 +914,95 @@ document.getElementById("excelFile").addEventListener("change", async function(e
       return;
     }
 
-    showStatus("Checking existing vehicles...");
-
-    const existingData = await apiRequest("/vehicles?select=serial");
-
-    const existingSerials = new Set(
-      (existingData || []).map(v =>
-        String(v.serial || "").trim().toLowerCase()
-      )
-    );
+    // REMOVE DUPLICATES WITHIN THE EXCEL FILE
 
     const fileSerials = new Set();
 
-    const newVehicles = [];
+    const uniqueVehicles = [];
 
     let duplicates = 0;
 
     for (const v of valid) {
 
-      const s = v.serial.toLowerCase();
+      const s = v.serial.trim().toLowerCase();
 
-      if (existingSerials.has(s) || fileSerials.has(s)) {
+      if (fileSerials.has(s)) {
         duplicates++;
         continue;
       }
 
       fileSerials.add(s);
 
-      newVehicles.push(v);
+      uniqueVehicles.push(v);
 
     }
+
+    // CHECK EXISTING SERIALS IN SMALL BATCHES
+
+    showStatus("Checking existing vehicles...");
+
+    const existingSerials = new Set();
+
+    const batchSize = 50;
+
+    for (
+      let i = 0;
+      i < uniqueVehicles.length;
+      i += batchSize
+    ) {
+
+      const batch = uniqueVehicles.slice(
+        i,
+        i + batchSize
+      );
+
+      const serialValues = batch.map(v =>
+        '"' + v.serial.replace(/"/g, '\\"') + '"'
+      ).join(",");
+
+      const query =
+        "/vehicles?select=serial&serial=in.(" +
+        encodeURIComponent(serialValues) +
+        ")";
+
+      const result = await apiRequest(query);
+
+      (result || []).forEach(v => {
+
+        existingSerials.add(
+          String(v.serial || "").trim().toLowerCase()
+        );
+
+      });
+
+    }
+
+    // FILTER EXISTING VEHICLES
+
+    const newVehicles = uniqueVehicles.filter(v => {
+
+      const s = v.serial.trim().toLowerCase();
+
+      if (existingSerials.has(s)) {
+        duplicates++;
+        return false;
+      }
+
+      return true;
+
+    });
 
     if (!newVehicles.length) {
-      showStatus("No new vehicles to import");
+
+      showStatus(
+        "No new vehicles to import. Duplicates skipped: " +
+        duplicates
+      );
+
       return;
     }
+
+    // CONFIRM
 
     const confirmImport = confirm(
       "New vehicles: " + newVehicles.length +
@@ -911,17 +1013,41 @@ document.getElementById("excelFile").addEventListener("change", async function(e
 
     if (!confirmImport) return;
 
+    // IMPORT IN BATCHES
+
     showStatus("Importing vehicles...");
 
-    await apiRequest("/vehicles", {
-      method: "POST",
-      body: JSON.stringify(newVehicles)
-    });
+    let imported = 0;
+
+    for (
+      let i = 0;
+      i < newVehicles.length;
+      i += batchSize
+    ) {
+
+      const batch = newVehicles.slice(
+        i,
+        i + batchSize
+      );
+
+      await apiRequest("/vehicles", {
+        method: "POST",
+        body: JSON.stringify(batch)
+      });
+
+      imported += batch.length;
+
+      showStatus(
+        "Importing... " + imported +
+        "/" + newVehicles.length
+      );
+
+    }
 
     showStatus(
-      "Import successful: " + newVehicles.length +
-      " vehicles. Duplicates skipped: " + duplicates +
-      ". Missing SERIAL: " + missing
+      "Import successful: " + imported +
+      " vehicles. Duplicates skipped: " +
+      duplicates + ". Missing SERIAL: " + missing
     );
 
   } catch (error) {
