@@ -654,17 +654,9 @@ document.getElementById("excelFile").addEventListener("change", async function(e
       return;
     }
 
-    const existingResponse = await apiRequest(
-      "/vehicles?select=serial"
-    );
-
-    if (!existingResponse.ok) {
-  showStatus("Unable to check existing vehicles");
-  console.error("Existing vehicles check failed:", existingResponse);
-  alert("Unable to check existing vehicles");
-  return;
-}
-    const existingData = await existingResponse.json();
+    const existingData = await apiRequest(
+  "/vehicles?select=serial"
+);
     const existingSerials = new Set(
       existingData.map(v => String(v.serial).trim().toLowerCase())
     );
