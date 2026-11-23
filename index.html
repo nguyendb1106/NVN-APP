@@ -423,6 +423,11 @@ function hideEventForm() {
 
 async function saveEvent() {
 
+  if (!adminSession || !adminSession.access_token) {
+    showStatus("Admin login required");
+    return;
+  }
+
   if (!currentVehicleId) {
     showStatus("No vehicle selected");
     return;
