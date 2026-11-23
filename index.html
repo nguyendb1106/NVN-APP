@@ -659,10 +659,11 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     );
 
     if (!existingResponse.ok) {
-      showStatus("Unable to check existing vehicles");
-      return;
-    }
-
+  const errorText = await existingResponse.text();
+  showStatus("Check vehicles failed: " + existingResponse.status);
+  alert(errorText);
+  return;
+}
     const existingData = await existingResponse.json();
     const existingSerials = new Set(
       existingData.map(v => String(v.serial).trim().toLowerCase())
