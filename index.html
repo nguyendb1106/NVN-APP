@@ -615,5 +615,112 @@ async function adminLogin() {
 }
 </script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+document.getElementById("excelFile").addEventListener("change", async function(e) {
+
+  if (!adminSession || !adminSession.access_token) {
+    showStatus("Admin login required");
+    return;
+  }
+
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, {type: "array"});
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+    const rows = XLSX.utils.sheet_to_json(sheet, {defval: ""});
+
+    if (rows.length === 0) {
+      showStatus("Excel file is empty");
+      return;
+    }
+
+    const vehicles = rows.map(row => ({
+      customer: String(row.CUSTOMER || "").trim(),
+      location: String(row.LOCATION || "").trim(),
+      vehicle_name: String(row["VEHICLE NAME"] || "").trim(),
+      model: String(row.MODEL || "").trim(),
+      serial: String(row.SERIAL || "").trim()
+    }));
+
+    const valid = vehicles.filter(v => v.serial);
+    const missing = vehicles.length - valid.length;
+
+    if (valid.length === 0) {
+      showStatus("No valid SERIAL found");
+      return;
+    }
+
+    const existingResponse = await apiRequest(
+      "/vehicles?select=serial"
+    );
+
+    if (!existingResponse.ok) {
+      showStatus("Unable to check existing vehicles");
+      return;
+    }
+
+    const existingData = await existingResponse.json();
+    const existingSerials = new Set(
+      existingData.map(v => String(v.serial).trim().toLowerCase())
+    );
+
+    const fileSerials = new Set();
+    const newVehicles = [];
+    let duplicates = 0;
+
+    for (const v of valid) {
+      const s = v.serial.toLowerCase();
+
+      if (existingSerials.has(s) || fileSerials.has(s)) {
+        duplicates++;
+        continue;
+      }
+
+      fileSerials.add(s);
+      newVehicles.push(v);
+    }
+
+    if (newVehicles.length === 0) {
+      showStatus("No new vehicles to import");
+      return;
+    }
+
+    const confirmImport = confirm(
+      "Vehicles to import: " + newVehicles.length +
+      "\nDuplicates skipped: " + duplicates +
+      "\nMissing SERIAL: " + missing +
+      "\n\nContinue import?"
+    );
+
+    if (!confirmImport) return;
+
+    const response = await apiRequest("/vehicles", {
+      method: "POST",
+      body: JSON.stringify(newVehicles)
+    });
+
+    if (!response.ok) {
+      showStatus("Import failed");
+      return;
+    }
+
+    showStatus(
+      "Import successful: " + newVehicles.length +
+      " vehicles. Skipped: " + duplicates +
+      ". Missing SERIAL: " + missing
+    );
+
+  } catch (error) {
+    console.error(error);
+    showStatus("Excel import error");
+  }
+
+  e.target.value = "";
+});
+</script>
 </body>
 </html>
