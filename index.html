@@ -108,7 +108,8 @@ input.search-found {
 <button id="saveBtn" class="save" onclick="saveVehicle()" style="display:none;">SAVE</button>
 <button class="search" onclick="searchVehicle()">SEARCH</button>
 <button class="clear" onclick="clearForm()">CLEAR</button>
-
+<button id="importBtn" class="add-event hidden" onclick="document.getElementById('excelFile').click()">TRUCK DATA UPLOAD</button>
+<input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden">
 <div id="status"></div>
 
 <div id="historySection" class="card hidden">
@@ -605,6 +606,7 @@ async function adminLogin() {
 
     document.getElementById("adminLoginForm").style.display = "none";
     document.getElementById("saveBtn").style.display = "block";
+    document.getElementById("importBtn").style.display = "block";
 
   } catch (error) {
     adminSession = null;
