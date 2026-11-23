@@ -298,6 +298,9 @@ async function searchVehicle() {
 
     if (matches.length === 0) {
       currentVehicleId = null;
+      ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
+  document.getElementById(id).classList.remove("search-found");
+});
       document.getElementById("historySection").classList.add("hidden");
       showStatus("Vehicle not found");
       return;
@@ -353,6 +356,9 @@ async function selectVehicle(vehicle) {
   document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
   document.getElementById("model").value = vehicle.model || "";
   document.getElementById("serial").value = vehicle.serial || "";
+  ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
+  document.getElementById(id).classList.add("search-found");
+});
 
   document.getElementById("historySection").classList.remove("hidden");
 
@@ -373,6 +379,9 @@ function clearForm() {
   document.getElementById("historyList").innerHTML = "";
 
   currentVehicleId = null;
+  ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
+  document.getElementById(id).classList.remove("search-found");
+});
 
   showStatus("");
 }
