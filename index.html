@@ -468,5 +468,15 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+<script>
+document.querySelectorAll('input, textarea').forEach(el => {
+  el.addEventListener('input', function() {
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(start, end);
+  });
+});
+</script>
 </body>
 </html>
