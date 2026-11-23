@@ -659,9 +659,9 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     );
 
     if (!existingResponse.ok) {
-  const errorText = await existingResponse.text();
-  showStatus("Check vehicles failed: " + existingResponse.status);
-  alert(errorText);
+  showStatus("Unable to check existing vehicles");
+  console.error("Existing vehicles check failed:", existingResponse);
+  alert("Unable to check existing vehicles");
   return;
 }
     const existingData = await existingResponse.json();
