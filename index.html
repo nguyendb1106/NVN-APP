@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,11 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1f2937">
 <title>NVN Forklift Database</title>
-  <link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NVN Database">
-
 
 <style>
 * { box-sizing: border-box; }
@@ -56,6 +56,7 @@ button {
 .clear { background: #6c757d; }
 .add-event { background: #1f2937; }
 .event-save { background: #198754; }
+.delete-vehicle { background: #dc3545; }
 
 .card {
   background: white;
@@ -86,6 +87,7 @@ button {
   font-size: 14px;
   word-break: break-word;
 }
+
 input.search-found {
   background: #ffeb3b !important;
   background-color: #ffeb3b !important;
@@ -106,10 +108,24 @@ input.search-found {
 <input id="serial" placeholder="Serial Number">
 
 <button id="saveBtn" class="save" onclick="saveVehicle()" style="display:none;">SAVE</button>
+
 <button class="search" onclick="searchVehicle()">SEARCH</button>
 <button class="clear" onclick="clearForm()">CLEAR</button>
-<button id="importBtn" class="add-event hidden" onclick="document.getElementById('excelFile').click()">TRUCK DATA UPLOAD</button>
+
+<button
+  id="deleteVehicleBtn"
+  class="delete-vehicle hidden"
+  onclick="deleteVehicle()">
+  DELETE VEHICLE
+</button>
+
+<button id="importBtn" class="add-event hidden"
+onclick="document.getElementById('excelFile').click()">
+TRUCK DATA UPLOAD
+</button>
+
 <input type="file" id="excelFile" accept=".xlsx,.xls" class="hidden">
+
 <div id="status"></div>
 
 <div id="historySection" class="card hidden">
@@ -155,6 +171,7 @@ const SUPABASE_KEY = "sb_publishable_OcP1l_4XOO3xClIBoq8RDg_iNNjCaYZ";
 const API = SUPABASE_URL + "/rest/v1";
 
 let currentVehicleId = null;
+let searchedVehicleForDelete = false;
 
 
 // API REQUEST
@@ -189,9 +206,27 @@ function showStatus(message) {
 }
 
 
+// DELETE BUTTON VISIBILITY
+
+function updateDeleteButton() {
+
+  const button = document.getElementById("deleteVehicleBtn");
+
+  if (
+    adminSession &&
+    adminSession.access_token &&
+    currentVehicleId &&
+    searchedVehicleForDelete
+  ) {
+    button.classList.remove("hidden");
+  } else {
+    button.classList.add("hidden");
+  }
+}
+
+
 // SAVE VEHICLE
 
-// SEARCH VEHICLE
 async function saveVehicle() {
 
   if (!adminSession || !adminSession.access_token) {
@@ -237,6 +272,9 @@ async function saveVehicle() {
       );
 
       currentVehicleId = existing[0].id;
+      searchedVehicleForDelete = false;
+      updateDeleteButton();
+
       showStatus("Vehicle updated successfully");
 
     } else {
@@ -250,6 +288,9 @@ async function saveVehicle() {
       );
 
       currentVehicleId = vehicle[0].id;
+      searchedVehicleForDelete = false;
+      updateDeleteButton();
+
       showStatus("Vehicle saved successfully");
     }
 
@@ -265,9 +306,14 @@ async function saveVehicle() {
   }
 }
 
-  
+
 // SEARCH VEHICLE
+
 async function searchVehicle() {
+
+  searchedVehicleForDelete = false;
+  updateDeleteButton();
+
   const keyword = document.getElementById("serial").value.trim().toUpperCase();
 
   if (!keyword) {
@@ -276,6 +322,7 @@ async function searchVehicle() {
   }
 
   try {
+
     showStatus("Searching...");
 
     const result = await apiRequest("/vehicles?select=*");
@@ -301,24 +348,34 @@ async function searchVehicle() {
     box.innerHTML = "";
 
     if (matches.length === 0) {
+
       currentVehicleId = null;
+      searchedVehicleForDelete = false;
+      updateDeleteButton();
+
       ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-  document.getElementById(id).classList.remove("search-found");
-});
+        document.getElementById(id).classList.remove("search-found");
+      });
+
       document.getElementById("historySection").classList.add("hidden");
+
       showStatus("Vehicle not found");
+
       return;
     }
 
     if (matches.length === 1) {
+
       await selectVehicle(matches[0]);
       showStatus("Vehicle found");
+
       return;
     }
 
     showStatus(matches.length + " vehicles found");
 
     matches.forEach(vehicle => {
+
       const button = document.createElement("button");
 
       button.style.display = "block";
@@ -339,36 +396,60 @@ async function searchVehicle() {
         (vehicle.serial || "");
 
       button.onclick = async () => {
+
         await selectVehicle(vehicle);
+
         box.innerHTML = "";
+
         showStatus("Vehicle found");
+
       };
 
       box.appendChild(button);
+
     });
 
   } catch (error) {
+
+    currentVehicleId = null;
+    searchedVehicleForDelete = false;
+    updateDeleteButton();
+
     showStatus("ERROR: " + error.message);
+
   }
 }
 
+
+// SELECT VEHICLE
+
 async function selectVehicle(vehicle) {
+
   currentVehicleId = vehicle.id;
+
+  searchedVehicleForDelete = true;
 
   document.getElementById("customer").value = vehicle.customer || "";
   document.getElementById("location").value = vehicle.location || "";
   document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
   document.getElementById("model").value = vehicle.model || "";
   document.getElementById("serial").value = vehicle.serial || "";
+
   ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-  document.getElementById(id).classList.add("search-found");
-});
+    document.getElementById(id).classList.add("search-found");
+  });
+
+  updateDeleteButton();
 
   document.getElementById("historySection").classList.remove("hidden");
 
   await loadHistory();
+
 }
-    
+
+
+// CLEAR FORM
+
 function clearForm() {
 
   document.getElementById("customer").value = "";
@@ -382,12 +463,100 @@ function clearForm() {
 
   document.getElementById("historyList").innerHTML = "";
 
+  const box = document.getElementById("searchResults");
+
+  if (box) {
+    box.innerHTML = "";
+  }
+
   currentVehicleId = null;
+  searchedVehicleForDelete = false;
+
+  updateDeleteButton();
+
   ["customer", "location", "vehicle_name", "model", "serial"].forEach(id => {
-  document.getElementById(id).classList.remove("search-found");
-});
+    document.getElementById(id).classList.remove("search-found");
+  });
 
   showStatus("");
+
+}
+
+
+// DELETE VEHICLE
+
+async function deleteVehicle() {
+
+  if (!adminSession || !adminSession.access_token) {
+    showStatus("Admin login required");
+    updateDeleteButton();
+    return;
+  }
+
+  if (!currentVehicleId || !searchedVehicleForDelete) {
+    showStatus("Please SEARCH a vehicle first");
+    updateDeleteButton();
+    return;
+  }
+
+  const customer = document.getElementById("customer").value;
+  const vehicleName = document.getElementById("vehicle_name").value;
+  const model = document.getElementById("model").value;
+  const serial = document.getElementById("serial").value;
+
+  const confirmation =
+    "DELETE THIS VEHICLE?\n\n" +
+    "Customer: " + customer + "\n" +
+    "Vehicle: " + vehicleName + "\n" +
+    "Model: " + model + "\n" +
+    "Serial: " + serial + "\n\n" +
+    "This will also delete its history.\n\n" +
+    "This action cannot be undone.";
+
+  if (!confirm(confirmation)) {
+    return;
+  }
+
+  try {
+
+    showStatus("Deleting vehicle history...");
+
+    const vehicleIdToDelete = currentVehicleId;
+
+    // DELETE RELATED HISTORY FIRST
+
+    await apiRequest(
+      "/vehicle_history?vehicle_id=eq." +
+      encodeURIComponent(vehicleIdToDelete),
+      {
+        method: "DELETE"
+      }
+    );
+
+    showStatus("Deleting vehicle...");
+
+    // DELETE VEHICLE
+
+    await apiRequest(
+      "/vehicles?id=eq." +
+      encodeURIComponent(vehicleIdToDelete),
+      {
+        method: "DELETE"
+      }
+    );
+
+    // RESET SCREEN
+
+    clearForm();
+
+    showStatus("Vehicle deleted successfully");
+
+  } catch (error) {
+
+    showStatus("DELETE ERROR: " + error.message);
+
+  }
+
 }
 
 
@@ -410,6 +579,7 @@ function showEventForm() {
 
   document.getElementById("eventDate").value =
     new Date().toISOString().slice(0, 10);
+
 }
 
 
@@ -417,6 +587,7 @@ function hideEventForm() {
 
   document.getElementById("eventForm")
     .classList.add("hidden");
+
 }
 
 
@@ -475,6 +646,7 @@ async function saveEvent() {
     showStatus("ERROR: " + error.message);
 
   }
+
 }
 
 
@@ -499,6 +671,7 @@ async function loadHistory() {
     list.innerHTML = "<p>No history available</p>";
 
     return;
+
   }
 
   events.forEach(event => {
@@ -537,6 +710,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
 <script>
 document.querySelectorAll('input, textarea').forEach(el => {
   el.addEventListener('input', function() {
@@ -547,13 +721,17 @@ document.querySelectorAll('input, textarea').forEach(el => {
   });
 });
 </script>
+
 <!-- ADMIN LOGIN -->
+
 <div id="adminBox" style="margin-top:20px;padding:12px;background:#fff;border-radius:8px;">
+
   <button onclick="toggleAdminLogin()" style="background:#343a40;">
     ADMIN LOGIN
   </button>
 
   <div id="adminLoginForm" style="display:none;margin-top:10px;">
+
     <input id="adminEmail" type="email" placeholder="Admin Email">
     <input id="adminPassword" type="password" placeholder="Password">
 
@@ -564,35 +742,48 @@ document.querySelectorAll('input, textarea').forEach(el => {
     <button onclick="toggleAdminLogin()" style="background:#6c757d;">
       CANCEL
     </button>
+
   </div>
 
   <div id="adminStatus" style="margin-top:10px;"></div>
+
 </div>
 
 <script>
+
 let adminSession = null;
 
 function toggleAdminLogin() {
+
   const form = document.getElementById("adminLoginForm");
+
   form.style.display = form.style.display === "none" ? "block" : "none";
+
 }
 
+
 async function adminLogin() {
+
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("adminPassword").value;
 
   const status = document.getElementById("adminStatus");
+
   status.textContent = "Logging in...";
 
   try {
-    const response = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ email, password })
-    });
+
+    const response = await fetch(
+      SUPABASE_URL + "/auth/v1/token?grant_type=password",
+      {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      }
+    );
 
     const data = await response.json();
 
@@ -605,17 +796,31 @@ async function adminLogin() {
     status.textContent = "Admin login successful";
 
     document.getElementById("adminLoginForm").style.display = "none";
+
     document.getElementById("saveBtn").style.display = "block";
+
     document.getElementById("importBtn").style.display = "block";
 
+    updateDeleteButton();
+
   } catch (error) {
+
     adminSession = null;
+
     status.textContent = "ERROR: " + error.message;
+
+    updateDeleteButton();
+
   }
+
 }
+
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <script>
+
 document.getElementById("excelFile").addEventListener("change", async function(e) {
 
   try {
@@ -626,13 +831,17 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     }
 
     const file = e.target.files[0];
+
     if (!file) return;
 
     showStatus("Reading Excel file...");
 
     const data = await file.arrayBuffer();
+
     const workbook = XLSX.read(data, {type: "array"});
+
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
     const rows = XLSX.utils.sheet_to_json(sheet, {defval: ""});
 
     if (!rows.length) {
@@ -649,6 +858,7 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     }));
 
     const valid = vehicles.filter(v => v.serial);
+
     const missing = vehicles.length - valid.length;
 
     if (!valid.length) {
@@ -661,14 +871,19 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     const existingData = await apiRequest("/vehicles?select=serial");
 
     const existingSerials = new Set(
-      (existingData || []).map(v => String(v.serial || "").trim().toLowerCase())
+      (existingData || []).map(v =>
+        String(v.serial || "").trim().toLowerCase()
+      )
     );
 
     const fileSerials = new Set();
+
     const newVehicles = [];
+
     let duplicates = 0;
 
     for (const v of valid) {
+
       const s = v.serial.toLowerCase();
 
       if (existingSerials.has(s) || fileSerials.has(s)) {
@@ -677,7 +892,9 @@ document.getElementById("excelFile").addEventListener("change", async function(e
       }
 
       fileSerials.add(s);
+
       newVehicles.push(v);
+
     }
 
     if (!newVehicles.length) {
@@ -708,15 +925,22 @@ document.getElementById("excelFile").addEventListener("change", async function(e
     );
 
   } catch (error) {
+
     console.error("Excel import error:", error);
+
     showStatus("IMPORT ERROR: " + error.message);
+
     alert("IMPORT ERROR:\n" + error.message);
 
   } finally {
+
     e.target.value = "";
+
   }
 
 });
+
 </script>
+
 </body>
 </html>
