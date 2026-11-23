@@ -353,33 +353,7 @@ async function selectVehicle(vehicle) {
 
   await loadHistory();
 }
-    const vehicle = result[0];
-
-    currentVehicleId = vehicle.id;
-
-    document.getElementById("customer").value = vehicle.customer || "";
-    document.getElementById("location").value = vehicle.location || "";
-    document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
-    document.getElementById("model").value = vehicle.model || "";
-    document.getElementById("serial").value = vehicle.serial || "";
-
-    document.getElementById("historySection")
-      .classList.remove("hidden");
-
-    await loadHistory();
-
-    showStatus("Vehicle found");
-
-  } catch (error) {
-
-    showStatus("ERROR: " + error.message);
-
-  }
-}
-
-
-// CLEAR FORM
-
+    
 function clearForm() {
 
   document.getElementById("customer").value = "";
