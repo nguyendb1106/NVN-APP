@@ -184,7 +184,13 @@ function showStatus(message) {
 
 // SAVE VEHICLE
 
+// SEARCH VEHICLE
 async function saveVehicle() {
+
+  if (!adminSession || !adminSession.access_token) {
+    showStatus("Admin login required");
+    return;
+  }
 
   const customer = document.getElementById("customer").value.trim();
   const location = document.getElementById("location").value.trim();
@@ -224,7 +230,6 @@ async function saveVehicle() {
       );
 
       currentVehicleId = existing[0].id;
-
       showStatus("Vehicle updated successfully");
 
     } else {
@@ -238,7 +243,6 @@ async function saveVehicle() {
       );
 
       currentVehicleId = vehicle[0].id;
-
       showStatus("Vehicle saved successfully");
     }
 
@@ -254,9 +258,7 @@ async function saveVehicle() {
   }
 }
 
-
-// SEARCH VEHICLE
-
+  
 // SEARCH VEHICLE
 async function searchVehicle() {
   const keyword = document.getElementById("serial").value.trim().toUpperCase();
