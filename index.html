@@ -257,35 +257,102 @@ async function saveVehicle() {
 
 // SEARCH VEHICLE
 
+// SEARCH VEHICLE
 async function searchVehicle() {
+  const keyword = document.getElementById("serial").value.trim().toUpperCase();
 
-  const serial = document.getElementById("serial").value.trim();
-
-  if (!serial) {
-    showStatus("Enter Serial Number");
+  if (!keyword) {
+    showStatus("Enter Search Keyword");
     return;
   }
 
   try {
-
     showStatus("Searching...");
 
-    const result = await apiRequest(
-      "/vehicles?serial=eq." + encodeURIComponent(serial) + "&select=*"
+    const result = await apiRequest("/vehicles?select=*");
+
+    const matches = (result || []).filter(vehicle =>
+      [
+        vehicle.serial,
+        vehicle.customer,
+        vehicle.model,
+        vehicle.vehicle_name,
+        vehicle.location
+      ].some(value => (value || "").toUpperCase().includes(keyword))
     );
 
-    if (!result || result.length === 0) {
+    let box = document.getElementById("searchResults");
 
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "searchResults";
+      document.getElementById("historySection").before(box);
+    }
+
+    box.innerHTML = "";
+
+    if (matches.length === 0) {
       currentVehicleId = null;
-
-      document.getElementById("historySection")
-        .classList.add("hidden");
-
+      document.getElementById("historySection").classList.add("hidden");
       showStatus("Vehicle not found");
-
       return;
     }
 
+    if (matches.length === 1) {
+      await selectVehicle(matches[0]);
+      showStatus("Vehicle found");
+      return;
+    }
+
+    showStatus(matches.length + " vehicles found");
+
+    matches.forEach(vehicle => {
+      const button = document.createElement("button");
+
+      button.style.display = "block";
+      button.style.width = "100%";
+      button.style.padding = "12px";
+      button.style.margin = "8px 0";
+      button.style.textAlign = "left";
+      button.style.background = "#ffffff";
+      button.style.color = "#222222";
+      button.style.border = "1px solid #cccccc";
+      button.style.borderRadius = "8px";
+      button.style.cursor = "pointer";
+
+      button.textContent =
+        (vehicle.customer || "") + " | " +
+        (vehicle.vehicle_name || "") + " | " +
+        (vehicle.model || "") + " | " +
+        (vehicle.serial || "");
+
+      button.onclick = async () => {
+        await selectVehicle(vehicle);
+        box.innerHTML = "";
+        showStatus("Vehicle found");
+      };
+
+      box.appendChild(button);
+    });
+
+  } catch (error) {
+    showStatus("ERROR: " + error.message);
+  }
+}
+
+async function selectVehicle(vehicle) {
+  currentVehicleId = vehicle.id;
+
+  document.getElementById("customer").value = vehicle.customer || "";
+  document.getElementById("location").value = vehicle.location || "";
+  document.getElementById("vehicle_name").value = vehicle.vehicle_name || "";
+  document.getElementById("model").value = vehicle.model || "";
+  document.getElementById("serial").value = vehicle.serial || "";
+
+  document.getElementById("historySection").classList.remove("hidden");
+
+  await loadHistory();
+}
     const vehicle = result[0];
 
     currentVehicleId = vehicle.id;
